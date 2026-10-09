@@ -1,0 +1,173 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { once } from 'node:events';
+import { before, after, test } from 'node:test';
+import puppeteer from 'puppeteer';
+import { CaptchaClient } from '@captcha-solver-api/javascript-sdk';
+import { flow as v2 } from '../examples/recaptcha_v2.js';
+import { flow as callback } from '../examples/recaptcha_v2_callback_variant1.js';
+import { flow as v3 } from '../examples/recaptcha_v3.js';
+import { flow as turnstile } from '../examples/cloudflare_turnstile.js';
+import { flow as challenge } from '../examples/cloudflare_challenge_page.js';
+import { flow as image } from '../examples/normal_captcha_screenshot.js';
+import { flow as coordinates } from '../examples/coordinates.js';
+import { waitForSuccess } from '../lib/dom.js';
+
+let browser;
+let server;
+let baseUrl;
+let submitted;
+let receivedHeader;
+const originalEnv = { ...process.env };
+const success = `<p class="_successMessage_fixture" hidden>Demo accepted</p><script>
+window.accept = () => { document.querySelector('p[class*="successMessage"]').hidden = false; };
+</script>`;
+const button = '<button type="submit">Check</button>';
+const fixtures = {
+  '/v2': `<div data-sitekey="fixture-key"></div><textarea name="g-recaptcha-response"></textarea>${button}
+    <script>document.querySelector('button').onclick = () => {
+      if (document.querySelector('textarea').value === 'fixture-token') accept();
+    };</script>`,
+  '/callback': `<div data-sitekey="fixture-key"></div><script>
+    window.verifyDemoRecaptcha = token => { if (token === 'fixture-token') accept(); };
+    window.___grecaptcha_cfg = { clients: {0: { child: { sitekey: 'fixture-key', callback: window.verifyDemoRecaptcha } }} };
+    window.___grecaptcha_cfg.clients.self = window.___grecaptcha_cfg.clients;
+    </script>`,
+  '/v3': `${button}<script>
+    window.verifyRecaptcha = token => { if (token === 'fixture-token') accept(); };
+    window.grecaptcha = { ready: fn => fn(), execute: () => Promise.resolve('browser-token') };
+    document.querySelector('button').onclick = () => {
+      grecaptcha.execute('fixture-key', { action: 'fixture_action' }).then(window.verifyRecaptcha);
+    };
+    </script>`,
+  '/turnstile': `<div class="cf-turnstile" data-sitekey="fixture-key"></div><input name="cf-turnstile-response">${button}
+    <script>document.querySelector('button').onclick = () => {
+      if (document.querySelector('input').value === 'fixture-token') accept();
+    };</script>`,
+  '/challenge': `<script>
+    window.turnstile = { render: () => 'widget-id' };
+    window.turnstile.render('#widget', { sitekey: 'fixture-key', action: 'managed', cData: 'session-data',
+      chlPageData: 'page-data', callback: token => { if (token === 'fixture-token') accept(); } });
+    </script>`,
+  '/already': `<script>accept();</script>`,
+  '/blocked': '<div id="cf-error-details">Sorry, you have been blocked</div>',
+  '/image': `<img alt="normal captcha example" class="_captchaImage_fixture"><input id="simple-captcha-field">${button}<script>
+    const canvas = document.createElement('canvas'); canvas.width = 200; canvas.height = 100;
+    canvas.getContext('2d').fillText('test', 10, 30); document.querySelector('img').src = canvas.toDataURL();
+    document.querySelector('button').onclick = () => { if (document.querySelector('input').value === 'test') accept(); };
+    </script>`,
+  '/coordinates': `<div style="height:1200px"></div><img alt="clickcaptcha example" style="width:200px;height:100px">${button}<script>
+    const canvas = document.createElement('canvas'); canvas.width = 400; canvas.height = 200;
+    const image = document.querySelector('img'); image.src = canvas.toDataURL();
+    image.onclick = event => { window.clicked = [event.offsetX, event.offsetY]; };
+    document.querySelector('button').onclick = () => {
+      if (Math.abs(window.clicked?.[0] - 50) < 2 && Math.abs(window.clicked?.[1] - 25) < 2) accept();
+    };</script>`,
+};
+
+before(async () => {
+  delete process.env.SUCCESS_SELECTOR;
+  delete process.env.SUBMIT_SELECTOR;
+  delete process.env.CALLBACK_NAME;
+  delete process.env.RECAPTCHA_SITEKEY;
+  delete process.env.RECAPTCHA_ACTION;
+  process.env.RECAPTCHA_MIN_SCORE = '0.3';
+  server = createServer(async (req, res) => {
+    if (req.method === 'POST') {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      const data = JSON.parse(body);
+      assert.equal(data.clientKey, 'fixture-key');
+      res.setHeader('Content-Type', 'application/json');
+      if (req.url === '/createTask') {
+        submitted = data.task;
+        receivedHeader = req.headers['x-sdk'];
+        res.end(JSON.stringify({ errorId: 0, taskId: 1 }));
+      } else {
+        const solution = submitted.type === 'ImageToTextTask' ? { text: 'test' }
+          : submitted.type === 'CoordinatesTask' ? { coordinates: [{ x: 100, y: 50 }] }
+          : submitted.type === 'TurnstileTaskProxyless' ? { token: 'fixture-token', userAgent: 'FixtureBrowser/1.0' }
+          : { gRecaptchaResponse: 'fixture-token' };
+        res.end(JSON.stringify({ errorId: 0, status: 'ready', solution }));
+      }
+    } else {
+      res.setHeader('Content-Type', 'text/html');
+      res.end(success + (fixtures[req.url] || ''));
+    }
+  }).listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  browser = await puppeteer.launch({ headless: true, executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined });
+});
+
+after(async () => {
+  await browser?.close();
+  if (server) await new Promise(resolve => server.close(resolve));
+  process.env = originalEnv;
+});
+
+async function run(path, flow, options) {
+  process.env.TARGET_URL = baseUrl + path;
+  submitted = null;
+  const page = await browser.newPage();
+  page.setDefaultTimeout(3000);
+  await page.setViewport({ width: 1000, height: 700, deviceScaleFactor: 1 });
+  const solver = new CaptchaClient({ clientKey: 'fixture-key', baseUrl, timeout: 3000, pollingInterval: 1 });
+  try {
+    const message = await flow({ page, solver }, options);
+    assert.match(message, /Demo accepted/);
+    if (submitted) assert.match(receivedHeader, /^javascript-sdk\//);
+    return { task: submitted, userAgent: await page.evaluate(() => navigator.userAgent) };
+  } finally { await page.close(); }
+}
+
+test('v2 sends a real SDK request and submits the returned token', async () => {
+  const { task } = await run('/v2', v2);
+  assert.equal(task.type, 'RecaptchaV2TaskProxyless');
+  assert.equal(task.websiteKey, 'fixture-key');
+});
+test('proxy variant passes the configured proxy into its task', async () => {
+  const { task } = await run('/v2', v2, { proxyType: 'http', proxyAddress: 'proxy.example.com', proxyPort: 8080 });
+  assert.equal(task.type, 'RecaptchaV2Task');
+  assert.equal(task.proxyPort, 8080);
+});
+test('known callback receives the API token', async () => { await run('/callback', callback); });
+test('automatic discovery handles cyclic callback configuration', async () => { await run('/callback', callback, { auto: true }); });
+test('v3 preserves the action extracted from the page script', async () => {
+  const { task } = await run('/v3', v3);
+  assert.equal(task.pageAction, 'fixture_action');
+  assert.equal(task.minScore, 0.3);
+});
+test('extended v3 resolves the intercepted promise with the API answer', async () => { await run('/v3', v3, { extended: true }); });
+test('embedded Turnstile submits its response field', async () => { await run('/turnstile', turnstile); });
+test('Challenge interception preserves session fields and returned User-Agent', async () => {
+  const { task, userAgent } = await run('/challenge', challenge);
+  assert.equal(task.data, 'session-data');
+  assert.equal(task.pagedata, 'page-data');
+  assert.equal(task.action, 'managed');
+  assert.equal(userAgent, 'FixtureBrowser/1.0');
+});
+test('an already passed Challenge makes no paid request', async () => {
+  assert.equal((await run('/already', challenge)).task, null);
+});
+test('a Cloudflare block page fails before creating a paid task', async () => {
+  await assert.rejects(run('/blocked', challenge), /No API task was created/);
+  assert.equal(submitted, null);
+});
+for (const [name, options] of [['screenshot', {}], ['canvas', { canvas: true }], ['hints', { hints: true }]]) {
+  test(`image ${name} sends image data and verifies recognized text`, async () => {
+    const { task } = await run('/image', image, options);
+    assert.equal(task.type, 'ImageToTextTask');
+    assert.ok(Buffer.from(task.body, 'base64').length > 100);
+    if (options.hints) assert.equal(task.numeric, 4);
+  });
+}
+test('coordinate clicks account for image scaling and scroll position', async () => { await run('/coordinates', coordinates); });
+test('hidden success text does not produce a false pass', async () => {
+  const page = await browser.newPage();
+  page.setDefaultTimeout(100);
+  try {
+    await page.setContent(success);
+    await assert.rejects(waitForSuccess(page), /timeout/i);
+  } finally { await page.close(); }
+});
