@@ -97,7 +97,13 @@ before(async () => {
   }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   baseUrl = `http://127.0.0.1:${server.address().port}`;
-  browser = await puppeteer.launch({ headless: true, executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined });
+  browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
+    // GitHub's hosted runner requires Chrome's sandbox to be disabled. Local
+    // examples keep the browser sandbox enabled.
+    args: process.env.CI ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
+  });
 });
 
 after(async () => {
