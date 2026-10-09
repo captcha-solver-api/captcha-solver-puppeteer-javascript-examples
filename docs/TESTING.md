@@ -5,12 +5,12 @@ Validated on October 9, 2026 with Node.js 22 and Chrome 154.
 ## Automated checks
 
 - `npm run check`: passed.
-- `npm test`: 19 tests passed.
+- `npm test`: 20 tests passed.
 - Tests use a local page fixture and a local API stub. They do not spend API balance.
 - Covered flows: reCAPTCHA v2, proxy task construction, known and discovered
   callbacks, reCAPTCHA v3 script parsing and interception, embedded Turnstile,
-  Cloudflare Challenge interception, image capture, coordinate scaling, success
-  verification, credential redaction, and configuration validation.
+  Cloudflare Challenge and Tencent interception, image capture, coordinate
+  scaling, success verification, credential redaction, and configuration validation.
 
 ## Live demo checks
 
@@ -30,6 +30,9 @@ confirmed that the answer was accepted:
 
 ## Pending checks
 
+- `tencent.js`: its parameter interception, SDK task fields, complete callback
+  response, and page success verification pass against the local browser fixture.
+  A live check requires a user-supplied target URL and selectors.
 - `cloudflare_challenge_page.js`: the temporary demo returned a Cloudflare block
   page before its Turnstile widget loaded. The example detected the block and did
   not create an API task. Its interception and callback flow passed the local

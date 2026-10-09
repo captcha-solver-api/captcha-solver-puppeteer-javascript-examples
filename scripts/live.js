@@ -7,7 +7,7 @@ const examples = [
   'cloudflare_challenge_page', 'normal_captcha_screenshot', 'normal_captcha_canvas',
   'normal_captcha_screenshot_params', 'coordinates',
 ];
-const allowed = [...examples, 'recaptcha_v2_proxy', 'recaptcha_v2_callback_proxy'];
+const allowed = [...examples, 'recaptcha_v2_proxy', 'recaptcha_v2_callback_proxy', 'tencent'];
 const selected = process.argv.slice(2).length ? process.argv.slice(2) : examples;
 if (selected.some((name) => !allowed.includes(name))) throw new Error('Unknown example name.');
 process.env.KEEP_OPEN_MS = '0';

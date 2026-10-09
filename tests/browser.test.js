@@ -9,6 +9,7 @@ import { flow as callback } from '../examples/recaptcha_v2_callback_variant1.js'
 import { flow as v3 } from '../examples/recaptcha_v3.js';
 import { flow as turnstile } from '../examples/cloudflare_turnstile.js';
 import { flow as challenge } from '../examples/cloudflare_challenge_page.js';
+import { flow as tencent } from '../examples/tencent.js';
 import { flow as image } from '../examples/normal_captcha_screenshot.js';
 import { flow as coordinates } from '../examples/coordinates.js';
 import { waitForSuccess } from '../lib/dom.js';
@@ -63,6 +64,12 @@ const fixtures = {
     document.querySelector('button').onclick = () => {
       if (Math.abs(window.clicked?.[0] - 50) < 2 && Math.abs(window.clicked?.[1] - 25) < 2) accept();
     };</script>`,
+  '/tencent': `<button id="open-tencent">Verify</button><script src="/TCaptcha-global.js"></script><script>
+    window.TencentCaptcha = class { constructor(appId, callback) { this.callback = callback; } show() {} };
+    document.querySelector('#open-tencent').onclick = () => new TencentCaptcha('fixture-app-id', answer => {
+      if (answer.appid === 'fixture-app-id' && answer.ret === 0 && answer.ticket === 'fixture-ticket' && answer.randstr === 'fixture-randstr') accept();
+    }).show();
+    </script>`,
 };
 
 before(async () => {
@@ -71,8 +78,15 @@ before(async () => {
   delete process.env.CALLBACK_NAME;
   delete process.env.RECAPTCHA_SITEKEY;
   delete process.env.RECAPTCHA_ACTION;
+  delete process.env.TENCENT_TRIGGER_SELECTOR;
+  delete process.env.TENCENT_SUCCESS_SELECTOR;
   process.env.RECAPTCHA_MIN_SCORE = '0.3';
   server = createServer(async (req, res) => {
+    if (req.method === 'GET' && req.url === '/TCaptcha-global.js') {
+      res.setHeader('Content-Type', 'text/javascript');
+      res.end('window.fixtureTencentScript = true;');
+      return;
+    }
     if (req.method === 'POST') {
       let body = '';
       for await (const chunk of req) body += chunk;
@@ -83,10 +97,11 @@ before(async () => {
         submitted = data.task;
         receivedHeader = req.headers['x-sdk'];
         res.end(JSON.stringify({ errorId: 0, taskId: 1 }));
-      } else {
+      } else if (req.url === '/getTaskResult') {
         const solution = submitted.type === 'ImageToTextTask' ? { text: 'test' }
           : submitted.type === 'CoordinatesTask' ? { coordinates: [{ x: 100, y: 50 }] }
           : submitted.type === 'TurnstileTaskProxyless' ? { token: 'fixture-token', userAgent: 'FixtureBrowser/1.0' }
+          : submitted.type === 'TencentTaskProxyless' ? { appid: 'fixture-app-id', ret: 0, ticket: 'fixture-ticket', randstr: 'fixture-randstr' }
           : { gRecaptchaResponse: 'fixture-token' };
         res.end(JSON.stringify({ errorId: 0, status: 'ready', solution }));
       }
@@ -155,6 +170,14 @@ test('Challenge interception preserves session fields and returned User-Agent', 
 });
 test('an already passed Challenge makes no paid request', async () => {
   assert.equal((await run('/already', challenge)).task, null);
+});
+test('Tencent interception sends captured fields and invokes the original callback', async () => {
+  process.env.TENCENT_TRIGGER_SELECTOR = '#open-tencent';
+  process.env.TENCENT_SUCCESS_SELECTOR = 'p[class*="successMessage"]';
+  const { task } = await run('/tencent', tencent);
+  assert.equal(task.type, 'TencentTaskProxyless');
+  assert.equal(task.appId, 'fixture-app-id');
+  assert.match(task.captchaScript, /\/TCaptcha-global\.js$/);
 });
 test('a Cloudflare block page fails before creating a paid task', async () => {
   await assert.rejects(run('/blocked', challenge), /No API task was created/);

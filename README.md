@@ -1,19 +1,39 @@
-# Captcha Solver examples with JavaScript and Puppeteer
+# Captcha solving examples with JavaScript and Puppeteer
 
-Browser automation examples for the official
+Ready-to-run browser automation examples for the official
 [`@captcha-solver-api/javascript-sdk`](https://www.npmjs.com/package/@captcha-solver-api/javascript-sdk).
-Each example extracts CAPTCHA parameters, sends a task to Captcha Solver, applies
-the answer in Chrome, and waits for the demo page to confirm success.
+They show how to detect captcha parameters on a live page, create the correct API
+task, receive a solution, and apply it in a Puppeteer browser session.
 
-This private development repository mirrors the scenarios in our
-[Selenium Python examples](https://github.com/captcha-solver-api/captcha-solver-selenium-python-examples).
-It currently uses temporary demo targets. URLs are collected in
-[`config/demos.js`](config/demos.js) so they can be replaced before public release.
+The repository includes reCAPTCHA v2 and v3, callback-based reCAPTCHA,
+Cloudflare Turnstile and Challenge pages, Tencent CAPTCHA, image recognition,
+coordinate captchas, and proxy-based flows.
+
+## Contents
+
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Available examples](#available-examples)
+- [reCAPTCHA examples](#recaptcha-examples)
+- [Cloudflare examples](#cloudflare-examples)
+- [Tencent CAPTCHA](#tencent-captcha)
+- [Image and coordinate examples](#image-and-coordinate-examples)
+- [Proxy configuration](#proxy-configuration)
+- [How the examples work](#how-the-examples-work)
+- [Troubleshooting](#troubleshooting)
+- [Development checks](#development-checks)
+- [Useful links](#useful-links)
+- [Documentation](#documentation)
+
+## Requirements
+
+- Node.js 22.12 or newer
+- A Captcha Solver API key with sufficient balance
+- A working proxy for examples whose filename ends in `_proxy.js`
+
+Puppeteer downloads Chrome for Testing during installation.
 
 ## Quick start
-
-Requires Node.js **22.12 or newer** and a Captcha Solver API key with balance.
-Puppeteer downloads Chrome for Testing during installation.
 
 ```bash
 git clone https://github.com/captcha-solver-api/captcha-solver-puppeteer-javascript-examples.git
@@ -22,93 +42,113 @@ npm ci
 cp .env.example .env
 ```
 
-In Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
-Set your key in the local `.env` file:
+On Windows PowerShell, copy the configuration with:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Add your API key and the page you are authorized to test to `.env`:
 
 ```dotenv
 CAPTCHA_API_KEY=your_api_key
+TARGET_URL=https://your-site.example/captcha-page
 ```
 
-Run the official Google reCAPTCHA v2 demo:
+Before running an example other than `recaptcha_v2.js`, set `TARGET_URL` to your
+page. Each example expects the matching captcha type and may require selectors
+or callback names from that page.
+
+The reCAPTCHA v2 example uses Google's official public demo when `TARGET_URL` is
+blank:
 
 ```bash
 npm run example:recaptcha-v2
-# Equivalent:
-node examples/recaptcha_v2.js
 ```
 
 Chrome opens visibly by default. Set `HEADLESS=true` to run without a window.
 The browser closes after the result; `KEEP_OPEN_MS` controls the viewing delay.
-To use an existing Chrome installation, set `BROWSER_EXECUTABLE_PATH` to its full
-path. The `.env` file is resolved relative to the repository, not the shell's
-current directory.
+Set `BROWSER_EXECUTABLE_PATH` to use an existing Chrome installation.
 
-## Examples
+## Available examples
 
-| Scenario | File | npm command |
-| --- | --- | --- |
-| reCAPTCHA v2, official Google demo | [recaptcha_v2.js](examples/recaptcha_v2.js) | `npm run example:recaptcha-v2` |
-| reCAPTCHA v2 with proxy | [recaptcha_v2_proxy.js](examples/recaptcha_v2_proxy.js) | `npm run example:recaptcha-v2-proxy` |
-| reCAPTCHA v2, known callback | [recaptcha_v2_callback_variant1.js](examples/recaptcha_v2_callback_variant1.js) | `npm run example:callback` |
-| reCAPTCHA v2, discover callback | [recaptcha_v2_callback_variant2.js](examples/recaptcha_v2_callback_variant2.js) | `npm run example:callback-auto` |
-| Callback with proxy | [recaptcha_v2_callback_proxy.js](examples/recaptcha_v2_callback_proxy.js) | `npm run example:callback-proxy` |
-| reCAPTCHA v3, read page scripts | [recaptcha_v3.js](examples/recaptcha_v3.js) | `npm run example:recaptcha-v3` |
-| reCAPTCHA v3, intercept `execute()` | [recaptcha_v3_extended_js_script.js](examples/recaptcha_v3_extended_js_script.js) | `npm run example:recaptcha-v3-extended` |
-| Embedded Turnstile | [cloudflare_turnstile.js](examples/cloudflare_turnstile.js) | `npm run example:turnstile` |
-| Cloudflare Challenge page | [cloudflare_challenge_page.js](examples/cloudflare_challenge_page.js) | `npm run example:challenge` |
-| Image CAPTCHA screenshot | [normal_captcha_screenshot.js](examples/normal_captcha_screenshot.js) | `npm run example:image` |
-| Original image through canvas | [normal_captcha_canvas.js](examples/normal_captcha_canvas.js) | `npm run example:image-canvas` |
-| Image with recognition hints | [normal_captcha_screenshot_params.js](examples/normal_captcha_screenshot_params.js) | `npm run example:image-params` |
-| Coordinates and mouse clicks | [coordinates.js](examples/coordinates.js) | `npm run example:coordinates` |
+| Captcha type | Example | What it demonstrates |
+|---|---|---|
+| reCAPTCHA v2 | [`recaptcha_v2.js`](examples/recaptcha_v2.js) | Extract the sitekey, inject the response token, and submit |
+| reCAPTCHA v2 + proxy | [`recaptcha_v2_proxy.js`](examples/recaptcha_v2_proxy.js) | Use the same proxy for Chrome and the API task |
+| reCAPTCHA v2 callback | [`recaptcha_v2_callback_variant1.js`](examples/recaptcha_v2_callback_variant1.js) | Call a callback whose name is known |
+| reCAPTCHA v2 callback | [`recaptcha_v2_callback_variant2.js`](examples/recaptcha_v2_callback_variant2.js) | Discover the callback automatically |
+| Callback + proxy | [`recaptcha_v2_callback_proxy.js`](examples/recaptcha_v2_callback_proxy.js) | Combine callback submission with a matching proxy |
+| reCAPTCHA v3 | [`recaptcha_v3.js`](examples/recaptcha_v3.js) | Find `sitekey` and `action` in page scripts |
+| reCAPTCHA v3 interception | [`recaptcha_v3_extended_js_script.js`](examples/recaptcha_v3_extended_js_script.js) | Capture a live `grecaptcha.execute()` call |
+| Cloudflare Turnstile | [`cloudflare_turnstile.js`](examples/cloudflare_turnstile.js) | Solve an embedded widget and submit its form |
+| Cloudflare Challenge | [`cloudflare_challenge_page.js`](examples/cloudflare_challenge_page.js) | Intercept dynamic parameters and invoke the captured callback |
+| Tencent CAPTCHA | [`tencent.js`](examples/tencent.js) | Capture `appId` and return the complete solution to the original callback |
+| Image captcha | [`normal_captcha_screenshot.js`](examples/normal_captcha_screenshot.js) | Capture the element as a screenshot |
+| Image captcha | [`normal_captcha_canvas.js`](examples/normal_captcha_canvas.js) | Extract the original image through canvas |
+| Image captcha + hints | [`normal_captcha_screenshot_params.js`](examples/normal_captcha_screenshot_params.js) | Supply numeric and length constraints |
+| Coordinate captcha | [`coordinates.js`](examples/coordinates.js) | Scale returned coordinates and click the image |
 
-Variants reuse the base example's flow to keep the browser and task logic in one
-place. Each file can be run directly. The `flow({ page, solver })` functions are
-also importable when integrating into an existing browser session.
+## reCAPTCHA examples
 
-## Configuration
+### reCAPTCHA v2
 
-Copy the documented options from [`.env.example`](.env.example).
+[`recaptcha_v2.js`](examples/recaptcha_v2.js) reads the widget's `data-sitekey`,
+creates a `RecaptchaV2TaskProxyless`, places the returned token into
+`g-recaptcha-response`, and submits the form.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `CAPTCHA_API_KEY` | Required | Your Captcha Solver key; sent only to our API |
-| `TARGET_URL` | Per-example demo | Override when testing another page |
-| `HEADLESS` | `false` | Hide the Chrome window when `true` |
-| `BROWSER_EXECUTABLE_PATH` | Puppeteer's Chrome | Use a specific Chrome executable |
-| `BROWSER_USER_AGENT` | Browser default | Optional starting browser identity |
-| `PAGE_TIMEOUT_MS` | `60000` | Navigation, element, and success-message timeout |
-| `SOLVE_TIMEOUT_MS` | `180000` | SDK solve/request timeout |
-| `KEEP_OPEN_MS` | `3000` | Pause after success before closing Chrome |
-| `PRINT_SOLUTION` | `false` | Print the complete returned answer when `true` |
-| `SUCCESS_SELECTOR` | `.recaptcha-success, p[class*="successMessage"]` | Page element confirming verification; Challenge defaults to `p[class*="successMessage"]` |
-| `SUBMIT_SELECTOR` | Submit button/input | Override the form submission control |
-| `CALLBACK_NAME` | Per-example demo callback | Known v2 or v3 callback, including dotted names |
-| `RECAPTCHA_SITEKEY`, `RECAPTCHA_ACTION` | Automatic discovery | Override v3 script parsing together |
-| `RECAPTCHA_MIN_SCORE` | `0.3` | Requested v3 score |
+### reCAPTCHA v2 callbacks
 
-Changing the target URL may also require changing selectors in the example.
-For v3, the ordinary example recognizes literal `grecaptcha.execute(sitekey,
-{action})` calls in inline scripts. The extended example captures the call before
-page scripts execute and resolves its promise with the API answer, including
-when the call originates in an external script. It currently targets standard
-v3, not Enterprise. It clicks Check to trigger `execute()` when the page has not
-already called it on load. Both variants let the demo callback verify the token;
-they do not click Check again afterwards. Parameter overrides do not replace the
-extended variant's need to capture a live `execute()` call.
+[`recaptcha_v2_callback_variant1.js`](examples/recaptcha_v2_callback_variant1.js)
+uses a known callback name. [`recaptcha_v2_callback_variant2.js`](examples/recaptcha_v2_callback_variant2.js)
+searches the live reCAPTCHA client configuration and invokes the callback it finds.
 
-For Cloudflare Challenge, dynamic `action`, `cData`, `chlPageData`, and callback
-are captured before navigation. If the API returns `userAgent`, the example
-applies it before invoking the callback. An already passed Challenge exits
-without creating a paid task. Some Challenge pages can reject an automated
-browser before the widget appears; that is reported as a failed live check.
+### reCAPTCHA v3
 
-Canvas capture requires a same-origin or CORS-enabled image. The screenshot
-variant does not have this canvas restriction. Coordinate answers are scaled
-from the original image dimensions to the displayed element before clicking.
+[`recaptcha_v3.js`](examples/recaptcha_v3.js) inspects page scripts for the
+`sitekey` and action. The extended example captures `grecaptcha.execute()` before
+page scripts run and resolves its promise with the API answer.
 
-## Proxy examples
+## Cloudflare examples
 
-Configure a proxy in `.env` before using either `*_proxy.js` example:
+[`cloudflare_turnstile.js`](examples/cloudflare_turnstile.js) extracts an embedded
+widget's sitekey, fills `cf-turnstile-response`, and submits its form.
+
+[`cloudflare_challenge_page.js`](examples/cloudflare_challenge_page.js) captures
+dynamic `action`, `cData`, `chlPageData`, User-Agent, and callback fields before
+navigation. It applies the returned solution to the captured callback.
+
+## Tencent CAPTCHA
+
+[`tencent.js`](examples/tencent.js) installs its interceptor before navigation,
+captures the page's `TencentCaptcha` constructor call, creates a
+`TencentTaskProxyless`, and passes the complete solution to the original callback.
+
+The repository does not include a target site. Configure your own page and the
+element that proves successful verification:
+
+```dotenv
+TARGET_URL=https://your-site.example/tencent-captcha
+TENCENT_TRIGGER_SELECTOR=#open-captcha
+TENCENT_SUCCESS_SELECTOR=.verification-success
+```
+
+Leave `TENCENT_TRIGGER_SELECTOR` blank when the page opens Tencent CAPTCHA
+automatically. `TENCENT_SUCCESS_SELECTOR` is required because receiving an API
+answer alone does not prove that the page accepted it.
+
+```bash
+npm run example:tencent
+```
+
+## Image and coordinate examples
+
+The screenshot example captures the displayed element. The canvas example reads
+the original image dimensions and requires a same-origin or CORS-enabled image.
+The coordinate example scales API coordinates to the displayed element before
+clicking it.
+
+## Proxy configuration
 
 ```dotenv
 PROXY_TYPE=http
@@ -119,47 +159,87 @@ PROXY_PASSWORD=
 ```
 
 The same endpoint is passed to Chrome and the API task. HTTP proxies can use
-username/password authentication. SOCKS4/SOCKS5 are supported without credentials
-because Chrome does not support authenticated SOCKS proxies. No proxy is bundled.
+username/password authentication. Chrome supports SOCKS4/SOCKS5 here without
+credentials.
 
-## Tests and diagnostics
+## How the examples work
+
+Every script follows the same reusable sequence:
+
+1. Open the target page in Chrome.
+2. Extract fresh captcha parameters or image data from the page.
+3. Create the matching task from the JavaScript SDK.
+4. Call `CaptchaClient.solve()` and wait for the solution.
+5. Apply the returned token, text, coordinates, or callback data.
+6. Wait for the page's visible success state.
+
+Shared code in [`lib`](lib) loads configuration, launches Chrome, captures page
+parameters, applies answers, and records failure diagnostics.
+
+## Troubleshooting
+
+### API key is missing
+
+Create `.env` in the repository root and set `CAPTCHA_API_KEY`.
+
+### Chrome does not start
+
+Run `npm ci` again or set `BROWSER_EXECUTABLE_PATH` to a compatible Chrome binary.
+
+### A page changed its markup
+
+Update `TARGET_URL` and the relevant selector variables. Captcha demo and
+production pages can change without a release of this repository.
+
+### Tencent parameters are not captured
+
+The page must construct `TencentCaptcha` after the interceptor is installed. Set
+`TENCENT_TRIGGER_SELECTOR` to the button that opens the captcha, or leave it blank
+if the page opens the captcha during load.
+
+### A proxy example times out
+
+Confirm that the proxy can open the target page and that its credentials are
+valid. The browser and API task must use the same proxy.
+
+## Development checks
 
 ```bash
 npm run check
 npm test
 ```
 
-These checks use a local HTTP server, local CAPTCHA page fixtures, a stub API,
-and headless Chrome. They do not contact a solving service or spend balance.
-They cover token injection, callbacks, v3 interception, Challenge parameters,
-User-Agent propagation, image capture, coordinate scaling, and false success
-prevention. CI runs these checks without an API key.
-
-Live tests create paid API tasks with your configured key:
+Tests use a local site, stub API, and headless Chrome. They do not contact the
+solving service or spend balance. Live tests are explicit:
 
 ```bash
-# All non-proxy examples, sequentially; one attempt per example:
 npm run test:live
-
-# Selected examples only (file names without .js):
-npm run test:live -- recaptcha_v2 normal_captcha_canvas
+npm run test:live -- tencent
 ```
 
-A token returned by the API does not count as a passing test. Each example waits
-for visible page confirmation. Live JSON reports and failure screenshots are
-saved in ignored `artifacts/`. Keys are excluded from diagnostics and `.env` is
-ignored by Git. There are no automatic paid retries.
+## Build Faster with AI
 
-See [`docs/TESTING.md`](docs/TESTING.md) for the recorded validation status and
-[`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) for the remaining release work.
+Give [`llms.txt`](https://captcha-solver.com/llms.txt) to your AI assistant while
+adapting an example to your page.
 
-## Links
+```text
+Read https://captcha-solver.com/llms.txt and adapt the matching Puppeteer
+JavaScript example from this repository to my target page.
+```
 
-- [API documentation](https://captcha-solver.com/en/docs/captcha-types)
+## Useful links
+
 - [JavaScript SDK](https://github.com/captcha-solver-api/javascript-sdk)
 - [Python Selenium examples](https://github.com/captcha-solver-api/captcha-solver-selenium-python-examples)
 - [Puppeteer documentation](https://pptr.dev/)
 
+## Documentation
+
+- [Captcha Solver API documentation](https://captcha-solver.com/en/docs/captcha-types)
+- [JavaScript package on npm](https://www.npmjs.com/package/@captcha-solver-api/javascript-sdk)
+
+Use these examples only on websites you own or are authorized to automate.
+
 ## License
 
-[MIT](LICENSE.md), Captcha Solver Team.
+This project is available under the MIT License. See [LICENSE.md](LICENSE.md).

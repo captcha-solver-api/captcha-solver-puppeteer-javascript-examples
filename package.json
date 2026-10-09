@@ -16,6 +16,7 @@
     "example:recaptcha-v3-extended": "node examples/recaptcha_v3_extended_js_script.js",
     "example:turnstile": "node examples/cloudflare_turnstile.js",
     "example:challenge": "node examples/cloudflare_challenge_page.js",
+    "example:tencent": "node examples/tencent.js",
     "example:image": "node examples/normal_captcha_screenshot.js",
     "example:image-canvas": "node examples/normal_captcha_canvas.js",
     "example:image-params": "node examples/normal_captcha_screenshot_params.js",
