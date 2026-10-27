@@ -1,0 +1,50 @@
+{
+  "name": "captcha-solver-puppeteer-javascript-examples",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Captcha Solver browser automation examples using JavaScript and Puppeteer",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "example:recaptcha-v2": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v2.js",
+    "example:recaptcha-v2-proxy": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v2_proxy.js",
+    "example:callback": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v2_callback_variant1.js",
+    "example:callback-auto": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v2_callback_variant2.js",
+    "example:callback-proxy": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v2_callback_proxy.js",
+    "example:recaptcha-v3": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v3.js",
+    "example:recaptcha-v3-extended": "node --env-file-if-exists=.env examples/reCAPTCHA/recaptcha_v3_extended_js_script.js",
+    "example:turnstile": "node --env-file-if-exists=.env examples/cloudflare/cloudflare_turnstile.js",
+    "example:challenge": "node --env-file-if-exists=.env examples/cloudflare/cloudflare_challenge_page.js",
+    "example:tencent": "node --env-file-if-exists=.env examples/tencent/tencent.js",
+    "example:yandex-smartcaptcha": "node --env-file-if-exists=.env examples/yandex/yandex_smartcaptcha.js",
+    "example:image": "node --env-file-if-exists=.env examples/normal_captcha/normal_captcha_screenshot.js",
+    "example:image-canvas": "node --env-file-if-exists=.env examples/normal_captcha/normal_captcha_canvas.js",
+    "example:image-params": "node --env-file-if-exists=.env examples/normal_captcha/normal_captcha_screenshot_params.js",
+    "example:coordinates": "node --env-file-if-exists=.env examples/coordinates/coordinates.js",
+    "lint": "eslint .",
+    "check": "npm run lint && node scripts/check.js",
+    "test": "node --test tests/*.test.js",
+    "test:live": "node --env-file-if-exists=.env scripts/live.js"
+  },
+  "dependencies": {
+    "@captcha-solver-api/javascript-sdk": "^1.0.1",
+    "puppeteer": "^25.13.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/captcha-solver-api/captcha-solver-puppeteer-javascript-examples"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsdoc": "^61.4.1"
+  },
+  "overrides": {
+    "zod": "4.6.6"
+  }
+}
