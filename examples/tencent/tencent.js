@@ -86,6 +86,7 @@ export async function solveCaptcha(page, solver) {
   const solution = await solver.solve(task);
   console.log('6. Solution received', solution);
 
+  // Token injection and submission are site-specific; adapt this step to the target page.
   console.log('7. Passing the solution to the original Tencent callback');
   await page.evaluate((recordId, answer) => {
     window.__captchaSolverTencent.submit(recordId, answer);

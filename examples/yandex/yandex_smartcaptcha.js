@@ -45,6 +45,7 @@ export async function solveCaptcha(page, solver) {
     throw new Error('Captcha Solver returned an empty SmartCaptcha token.');
   }
 
+  // Token injection and submission are site-specific; adapt this step to the target page.
   console.log('5. Writing the token into smart-token');
   await page.waitForSelector(TOKEN_SELECTOR);
   await page.$eval(TOKEN_SELECTOR, (input, token) => {

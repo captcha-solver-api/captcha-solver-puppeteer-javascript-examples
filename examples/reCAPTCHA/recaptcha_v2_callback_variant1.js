@@ -32,6 +32,7 @@ export async function solveCaptcha(page, solver) {
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
+  // Token injection and submission are site-specific; adapt this step to the target page.
   const callbackName = process.env.CALLBACK_NAME || 'verifyDemoRecaptcha';
   console.log(`5. Calling ${callbackName} with the returned token`);
   await page.evaluate((name, token) => {

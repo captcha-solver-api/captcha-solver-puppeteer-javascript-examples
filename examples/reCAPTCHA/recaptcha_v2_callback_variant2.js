@@ -62,6 +62,7 @@ export async function solveCaptcha(page, solver) {
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
+  // Token injection and submission are site-specific; adapt this step to the target page.
   console.log('5. Passing the token to the discovered callback');
   await page.evaluate((token) => window.__captchaCallback(token), solution.gRecaptchaResponse);
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';

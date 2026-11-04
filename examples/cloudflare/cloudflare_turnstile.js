@@ -34,6 +34,7 @@ export async function solveCaptcha(page, solver) {
   console.log('4. Solution received', solution);
   if (!solution.token) throw new Error('Captcha Solver returned an empty token.');
 
+  // Token injection and submission are site-specific; adapt this step to the target page.
   console.log('5. Writing the token into cf-turnstile-response');
   await page.evaluate((token) => {
     const fields = document.getElementsByName('cf-turnstile-response');
