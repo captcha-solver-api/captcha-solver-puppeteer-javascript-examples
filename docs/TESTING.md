@@ -22,21 +22,21 @@ and Chrome 155.
 The following examples received a solution from Captcha Solver and the demo page
 confirmed that the answer was accepted:
 
-- `recaptcha_v2.js` — official Google reCAPTCHA v2 demo.
-- `recaptcha_v2_callback_variant1.js`.
-- `recaptcha_v2_callback_variant2.js`.
-- `recaptcha_v3.js`.
-- `recaptcha_v3_extended_js_script.js`.
-- `cloudflare_turnstile.js` — the API returned a solution and the configured
+- `recaptcha-v2.js` — official Google reCAPTCHA v2 demo.
+- `recaptcha-v2-callback.js`.
+- `recaptcha-v2-callback-auto.js`.
+- `recaptcha-v3.js`.
+- `recaptcha-v3-interception.js`.
+- `turnstile.js` — the API returned a solution and the configured
   test page confirmed acceptance on October 12, 2026.
-- `normal_captcha_screenshot.js`.
-- `normal_captcha_canvas.js`.
-- `normal_captcha_screenshot_params.js`.
+- `image-to-text.js`.
+- `image-to-text-canvas.js`.
+- `image-to-text-params.js`.
 - `coordinates.js`.
 
 ## Pending checks
 
-- `yandex_smartcaptcha.js`: task construction, token injection, form submission,
+- `yandex-smartcaptcha.js`: task construction, token injection, form submission,
   and page success verification pass against the local browser fixture. The
   official Yandex demo has not been live-tested from this repository yet.
 - `tencent.js`: its parameter interception, SDK task fields, complete callback
@@ -47,14 +47,14 @@ confirmed that the answer was accepted:
   but this mobile-WebView page closed the CAPTCHA without exposing a visible DOM
   success state, so the configured acceptance selector timed out. The attempt is
   not recorded as a page pass and was not retried.
-- `cloudflare_challenge_page.js`: tested against a configured target on October
+- `turnstile-challenge.js`: tested against a configured target on October
   12, 2026. The example captured the live `sitekey`, `action`, `cData`, `chlPageData`,
   and browser User-Agent and created an API task. One task returned a solution,
   but the page did not confirm acceptance; after fixing the browser User-Agent
   mismatch, the next single task returned `ERROR_CAPTCHA_UNSOLVABLE`. The runner
   did not retry it or report a page pass. The interception, SDK task, callback,
   and visible-success verification pass against the local browser fixture.
-- `recaptcha_v2_proxy.js` and `recaptcha_v2_callback_proxy.js`: tested on
+- `recaptcha-v2-proxy.js` and `recaptcha-v2-callback-proxy.js`: tested on
   October 12, 2026 with an authenticated EU HTTP proxy. Proxy authentication and
   outbound connectivity succeeded, and both examples created `RecaptchaV2Task`
   requests using the same proxy as Chrome. Each single API task returned

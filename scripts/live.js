@@ -13,14 +13,14 @@ function redact(value) {
 const { scripts } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const paths = Object.fromEntries(
   Object.entries(scripts)
-    .filter(([name]) => name.startsWith('example:'))
+    .filter(([, command]) => command.includes(' examples/'))
     .map(([, command]) => {
       const path = command.split(' ').at(-1);
       return [basename(path, '.js'), path];
     }),
 );
 const allowed = Object.keys(paths);
-const examples = allowed.filter((name) => !name.endsWith('_proxy') && name !== 'tencent');
+const examples = allowed.filter((name) => !name.endsWith('-proxy') && name !== 'tencent');
 const selected = process.argv.slice(2).length ? process.argv.slice(2) : examples;
 if (selected.some((name) => !allowed.includes(name))) throw new Error('Unknown example name.');
 await mkdir('artifacts', { recursive: true });
