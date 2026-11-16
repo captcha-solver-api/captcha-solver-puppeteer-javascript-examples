@@ -96,13 +96,8 @@ export async function solveCaptcha(page, solver) {
 
 /** Run the complete standalone example. */
 export async function main() {
-  const apiKey = process.env.CAPTCHA_API_KEY;
-  if (!apiKey || apiKey === 'your_api_key') {
-    throw new Error('Set CAPTCHA_API_KEY in .env or the environment.');
-  }
-
   console.log('Creating Captcha Solver client from CAPTCHA_API_KEY');
-  const solver = new CaptchaClient({ clientKey: apiKey });
+  const solver = new CaptchaClient({ clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY' });
   const browser = await puppeteer.launch({
     headless: process.env.HEADLESS === 'true',
     executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
@@ -112,7 +107,7 @@ export async function main() {
   try {
     const page = await browser.newPage();
     const result = await solveCaptcha(page, solver);
-    console.log('Captcha solved successfully:', result);
+    console.log('Page confirmation:', result);
   } finally {
     await browser.close();
   }

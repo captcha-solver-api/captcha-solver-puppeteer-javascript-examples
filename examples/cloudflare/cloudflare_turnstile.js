@@ -77,16 +77,14 @@ export async function solveCaptcha(page, solver) {
 
 /** Run the complete standalone Turnstile example. */
 export async function main() {
-  const apiKey = process.env.CAPTCHA_API_KEY;
-  if (!apiKey || apiKey === 'your_api_key') throw new Error('Set CAPTCHA_API_KEY.');
-  const solver = new CaptchaClient({ clientKey: apiKey });
+  const solver = new CaptchaClient({ clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY' });
   const browser = await puppeteer.launch({
     headless: process.env.HEADLESS === 'true',
     executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
   });
   try {
     const page = await browser.newPage();
-    console.log('Captcha solved successfully:', await solveCaptcha(page, solver));
+    console.log('Page confirmation:', await solveCaptcha(page, solver));
   } finally {
     await browser.close();
   }

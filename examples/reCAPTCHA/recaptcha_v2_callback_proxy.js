@@ -87,10 +87,8 @@ export async function solveCaptcha(page, solver, proxy) {
 
 /** Run the complete standalone proxy callback example. */
 export async function main() {
-  const apiKey = process.env.CAPTCHA_API_KEY;
-  if (!apiKey || apiKey === 'your_api_key') throw new Error('Set CAPTCHA_API_KEY.');
   const proxy = getProxy();
-  const solver = new CaptchaClient({ clientKey: apiKey });
+  const solver = new CaptchaClient({ clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY' });
   const browser = await puppeteer.launch({
     headless: process.env.HEADLESS === 'true',
     executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
@@ -103,7 +101,7 @@ export async function main() {
         username: proxy.proxyLogin,
         password: proxy.proxyPassword,
       });
-    console.log('Captcha solved successfully:', await solveCaptcha(page, solver, proxy));
+    console.log('Page confirmation:', await solveCaptcha(page, solver, proxy));
   } finally {
     await browser.close();
   }
