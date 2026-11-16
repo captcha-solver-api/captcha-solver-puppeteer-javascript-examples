@@ -1,13 +1,12 @@
 # Test status
 
-Automated checks validated on October 27, 2026 with Node.js 22.12, Node.js 24,
-and Chrome 155.
+Automated checks validated on November 16, 2026 with Node.js 22.12, Node.js 24, and Chrome 155.
 
 ## Automated checks
 
 - `npm run lint`: passed.
 - `npm run check`: passed (includes lint).
-- `npm test`: 18 browser integration tests passed.
+- `npm test`: 15 browser integration tests passed.
 - `npm audit --package-lock-only`: reports four low-severity findings inherited
   through `puppeteer-extra`; npm offers only a breaking downgrade as an automatic fix.
 - Tests use a local page fixture and a local API stub. They do not spend API balance.
@@ -15,8 +14,8 @@ and Chrome 155.
 - Covered flows: reCAPTCHA v2, proxy task construction, known and discovered
   callbacks, reCAPTCHA v3 script parsing and interception, embedded Turnstile,
   reCAPTCHA Enterprise, Cloudflare Challenge and Tencent interception, Yandex
-  SmartCaptcha token injection, GeeTest v3/v4 submission, image capture, coordinate
-  scaling, solution injection, and visible success verification.
+  SmartCaptcha token injection, GeeTest v3/v4 submission, solution injection, and visible success
+  verification.
 
 ## Live demo checks
 
@@ -30,17 +29,14 @@ confirmed that the answer was accepted:
 - `recaptcha-v3-interception.js`.
 - `turnstile.js` — the API returned a solution and the configured
   test page confirmed acceptance on October 12, 2026.
-- `image-to-text.js`.
-- `image-to-text-canvas.js`.
-- `image-to-text-params.js`.
 
 ## Pending checks
 
 - `recaptcha-v2-enterprise.js`, `geetest-v3.js`, and `geetest-v4.js`: task
   construction, solution submission, and acceptance verification pass against
   local browser fixtures. They have not been live-tested from this repository.
-- `coordinates.js`, `yandex-smartcaptcha-image.js`, and `balance.js`: syntax, lint, formatting,
-  and workflow-guide checks pass. Their paid API calls were not run locally.
+- `coordinates.js`, `image-to-text.js`, `yandex-smartcaptcha-image.js`, and `balance.js`: syntax,
+  lint, formatting, and workflow-guide checks pass. Their paid API calls were not run locally.
 - `yandex-smartcaptcha.js`: task construction, token injection, form submission,
   and page success verification pass against the local browser fixture. The
   official Yandex demo has not been live-tested from this repository yet.

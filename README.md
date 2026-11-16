@@ -86,28 +86,26 @@ repeated so that an example can be copied without also copying hidden project he
 
 ## Examples
 
-| Captcha                                       | File                                                                        | Command                               |
-| --------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
-| reCAPTCHA v2                                  | [`recaptcha-v2.js`](examples/recaptcha-v2.js)                               | `npm run recaptcha-v2`                |
-| reCAPTCHA v2 Enterprise                       | [`recaptcha-v2-enterprise.js`](examples/recaptcha-v2-enterprise.js)         | `npm run recaptcha-v2-enterprise`     |
-| reCAPTCHA v2 + proxy                          | [`recaptcha-v2-proxy.js`](examples/recaptcha-v2-proxy.js)                   | `npm run recaptcha-v2-proxy`          |
-| reCAPTCHA v2 callback                         | [`recaptcha-v2-callback.js`](examples/recaptcha-v2-callback.js)             | `npm run recaptcha-v2-callback`       |
-| reCAPTCHA v2 callback, automatic discovery    | [`recaptcha-v2-callback-auto.js`](examples/recaptcha-v2-callback-auto.js)   | `npm run recaptcha-v2-callback-auto`  |
-| reCAPTCHA v2 callback + proxy                 | [`recaptcha-v2-callback-proxy.js`](examples/recaptcha-v2-callback-proxy.js) | `npm run recaptcha-v2-callback-proxy` |
-| reCAPTCHA v3                                  | [`recaptcha-v3.js`](examples/recaptcha-v3.js)                               | `npm run recaptcha-v3`                |
-| reCAPTCHA v3 interception                     | [`recaptcha-v3-interception.js`](examples/recaptcha-v3-interception.js)     | `npm run recaptcha-v3-interception`   |
-| Cloudflare Turnstile                          | [`turnstile.js`](examples/turnstile.js)                                     | `npm run turnstile`                   |
-| Cloudflare Challenge                          | [`turnstile-challenge.js`](examples/turnstile-challenge.js)                 | `npm run turnstile-challenge`         |
-| Tencent CAPTCHA                               | [`tencent.js`](examples/tencent.js)                                         | `npm run tencent`                     |
-| Yandex SmartCaptcha                           | [`yandex-smartcaptcha.js`](examples/yandex-smartcaptcha.js)                 | `npm run yandex`                      |
-| Yandex image challenge                        | [`yandex-smartcaptcha-image.js`](examples/yandex-smartcaptcha-image.js)     | `npm run yandex-image`                |
-| GeeTest v3                                    | [`geetest-v3.js`](examples/geetest-v3.js)                                   | `npm run geetest-v3`                  |
-| GeeTest v4                                    | [`geetest-v4.js`](examples/geetest-v4.js)                                   | `npm run geetest-v4`                  |
-| Image captcha, screenshot                     | [`image-to-text.js`](examples/image-to-text.js)                             | `npm run image-to-text`               |
-| Image captcha, original pixels through canvas | [`image-to-text-canvas.js`](examples/image-to-text-canvas.js)               | `npm run image-to-text-canvas`        |
-| Image captcha with parameters                 | [`image-to-text-params.js`](examples/image-to-text-params.js)               | `npm run image-to-text-params`        |
-| Coordinates                                   | [`coordinates.js`](examples/coordinates.js)                                 | `npm run coordinates`                 |
-| Balance                                       | [`balance.js`](examples/balance.js)                                         | `npm run balance`                     |
+| Captcha                                    | File                                                                        | Command                               |
+| ------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------- |
+| reCAPTCHA v2                               | [`recaptcha-v2.js`](examples/recaptcha-v2.js)                               | `npm run recaptcha-v2`                |
+| reCAPTCHA v2 Enterprise                    | [`recaptcha-v2-enterprise.js`](examples/recaptcha-v2-enterprise.js)         | `npm run recaptcha-v2-enterprise`     |
+| reCAPTCHA v2 + proxy                       | [`recaptcha-v2-proxy.js`](examples/recaptcha-v2-proxy.js)                   | `npm run recaptcha-v2-proxy`          |
+| reCAPTCHA v2 callback                      | [`recaptcha-v2-callback.js`](examples/recaptcha-v2-callback.js)             | `npm run recaptcha-v2-callback`       |
+| reCAPTCHA v2 callback, automatic discovery | [`recaptcha-v2-callback-auto.js`](examples/recaptcha-v2-callback-auto.js)   | `npm run recaptcha-v2-callback-auto`  |
+| reCAPTCHA v2 callback + proxy              | [`recaptcha-v2-callback-proxy.js`](examples/recaptcha-v2-callback-proxy.js) | `npm run recaptcha-v2-callback-proxy` |
+| reCAPTCHA v3                               | [`recaptcha-v3.js`](examples/recaptcha-v3.js)                               | `npm run recaptcha-v3`                |
+| reCAPTCHA v3 interception                  | [`recaptcha-v3-interception.js`](examples/recaptcha-v3-interception.js)     | `npm run recaptcha-v3-interception`   |
+| Cloudflare Turnstile                       | [`turnstile.js`](examples/turnstile.js)                                     | `npm run turnstile`                   |
+| Cloudflare Challenge                       | [`turnstile-challenge.js`](examples/turnstile-challenge.js)                 | `npm run turnstile-challenge`         |
+| Tencent CAPTCHA                            | [`tencent.js`](examples/tencent.js)                                         | `npm run tencent`                     |
+| Yandex SmartCaptcha                        | [`yandex-smartcaptcha.js`](examples/yandex-smartcaptcha.js)                 | `npm run yandex`                      |
+| Yandex image challenge                     | [`yandex-smartcaptcha-image.js`](examples/yandex-smartcaptcha-image.js)     | `npm run yandex-image`                |
+| GeeTest v3                                 | [`geetest-v3.js`](examples/geetest-v3.js)                                   | `npm run geetest-v3`                  |
+| GeeTest v4                                 | [`geetest-v4.js`](examples/geetest-v4.js)                                   | `npm run geetest-v4`                  |
+| Image-to-text                              | [`image-to-text.js`](examples/image-to-text.js)                             | `npm run image-to-text`               |
+| Coordinates                                | [`coordinates.js`](examples/coordinates.js)                                 | `npm run coordinates`                 |
+| Balance                                    | [`balance.js`](examples/balance.js)                                         | `npm run balance`                     |
 
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
 by default. Set `TARGET_URL` to override the reCAPTCHA target and
@@ -146,11 +144,7 @@ npm test
 `npm run check` runs linting, formatting, syntax and workflow-guide validation, and the complete
 local browser regression suite. These checks use local fixtures and do not create paid tasks.
 
-`image-to-text.js` sends the pixels as rendered by Chrome.
-`image-to-text-canvas.js` draws the loaded image into a canvas and sends its
-original pixel data, avoiding viewport scaling and screenshot effects. Canvas
-capture only works when the page permits reading the image without a CORS-tainted
-canvas.
+`image-to-text.js` reads a local sample image and sends its base64 contents through the SDK.
 
 ## Useful links
 

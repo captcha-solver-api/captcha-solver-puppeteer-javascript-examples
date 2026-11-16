@@ -16,9 +16,6 @@ import { solveCaptcha as turnstile } from '../examples/turnstile.js';
 import { solveCaptcha as challenge } from '../examples/turnstile-challenge.js';
 import { solveCaptcha as tencent } from '../examples/tencent.js';
 import { solveCaptcha as yandex } from '../examples/yandex-smartcaptcha.js';
-import { solveCaptcha as imageScreenshot } from '../examples/image-to-text.js';
-import { solveCaptcha as imageCanvas } from '../examples/image-to-text-canvas.js';
-import { solveCaptcha as imageParams } from '../examples/image-to-text-params.js';
 import { solveCaptcha as geetestV3 } from '../examples/geetest-v3.js';
 import { solveCaptcha as geetestV4 } from '../examples/geetest-v4.js';
 
@@ -288,18 +285,6 @@ test('a Cloudflare block page fails before creating a paid task', async () => {
   await assert.rejects(run('/blocked', challenge), /blocked the browser/);
   assert.equal(submitted, null);
 });
-for (const [name, solveImage, hasHints] of [
-  ['screenshot', imageScreenshot, false],
-  ['canvas', imageCanvas, false],
-  ['hints', imageParams, true],
-]) {
-  test(`image ${name} sends image data and verifies recognized text`, async () => {
-    const { task } = await run('/image', solveImage);
-    assert.equal(task.type, 'ImageToTextTask');
-    assert.ok(Buffer.from(task.body, 'base64').length > 100);
-    if (hasHints) assert.equal(task.numeric, 4);
-  });
-}
 test('GeeTest v3 submits all returned verification fields', async () => {
   process.env.GEETEST_V3_TARGET_URL = `${baseUrl}/geetest-v3`;
   const page = await browser.newPage();

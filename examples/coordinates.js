@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 
@@ -27,13 +28,24 @@ const task = new Tasks.CoordinatesTask({
   comment: 'Click on all squares with street signs',
 });
 
-client
-  // STEP-03: Send the coordinate task and wait for the solver result.
-  .solve(task)
-  .then((solution) => {
-    // STEP-04: Print the received click coordinates to the console.
-    console.log(solution.coordinates);
-    // Use browser automation to click the target image at each returned x/y coordinate.
-  })
-  // STEP-04: Report errors raised while solving the CAPTCHA.
-  .catch(console.error);
+/** Create, solve, and print the coordinate task. */
+export function main() {
+  return (
+    client
+      // STEP-03: Send the coordinate task and wait for the solver result.
+      .solve(task)
+      .then((solution) => {
+        // STEP-04: Print coordinates in the original image's x/y coordinate system.
+        console.log(solution.coordinates);
+        // Use browser automation to click the original image at each returned x/y coordinate.
+        return solution;
+      })
+  );
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
+}

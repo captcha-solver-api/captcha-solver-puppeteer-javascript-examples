@@ -13,7 +13,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-02 - Reading the site key and action from page scripts.
  * STEP-03 - Sending the task to Captcha Solver.
  * STEP-04 - Solution received.
- * STEP-05 - Passing the token to ${callbackName}.
+ * STEP-05 - Pass the token to the configured callback.
  * STEP-06 - Waiting for page acceptance.
  */
 
@@ -118,7 +118,7 @@ export const solveCaptcha = function (page, solver) {
               const callbackName = process.env.CALLBACK_NAME || 'verifyRecaptcha';
               // Token injection and submission are site-specific; adapt this step to the target page.
               // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
-              // STEP-05: Passing the token to ${callbackName}.
+              // STEP-05: Pass the token to the configured callback.
               console.log(`5. Passing the token to ${callbackName}`);
               return Promise.resolve(
                 page.evaluate(

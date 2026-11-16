@@ -13,7 +13,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-02 - Reading CAPTCHA parameters and callback name.
  * STEP-03 - Sending the task to Captcha Solver.
  * STEP-04 - Solution received.
- * STEP-05 - Calling ${captcha.callbackName}.
+ * STEP-05 - Call the callback extracted from the widget.
  * STEP-06 - Waiting for page acceptance.
  */
 
@@ -123,7 +123,7 @@ export const solveCaptcha = function (page, solver, proxy) {
                     throw new Error('Captcha Solver returned an empty token.');
                   // Token injection and submission are site-specific; adapt this step to the target page.
                   // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
-                  // STEP-05: Calling ${captcha.callbackName}.
+                  // STEP-05: Call the callback extracted from the widget.
                   console.log(`5. Calling ${captcha.callbackName}`);
                   return Promise.resolve(
                     page.evaluate(

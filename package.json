@@ -38,8 +38,6 @@
     "yandex": "node --env-file-if-exists=.env examples/yandex-smartcaptcha.js",
     "yandex-image": "node --env-file-if-exists=.env examples/yandex-smartcaptcha-image.js",
     "image-to-text": "node --env-file-if-exists=.env examples/image-to-text.js",
-    "image-to-text-canvas": "node --env-file-if-exists=.env examples/image-to-text-canvas.js",
-    "image-to-text-params": "node --env-file-if-exists=.env examples/image-to-text-params.js",
     "coordinates": "node --env-file-if-exists=.env examples/coordinates.js",
     "geetest-v3": "node --env-file-if-exists=.env examples/geetest-v3.js",
     "geetest-v4": "node --env-file-if-exists=.env examples/geetest-v4.js",
