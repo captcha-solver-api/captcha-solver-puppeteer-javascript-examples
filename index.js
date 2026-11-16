@@ -1,1 +1,3 @@
-import './examples/turnstile-challenge.js';
+import { main } from './examples/turnstile-challenge.js';
+
+main();

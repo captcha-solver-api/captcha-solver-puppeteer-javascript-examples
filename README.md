@@ -110,10 +110,13 @@ be copied without also copying hidden project helpers.
 | Balance                                       | [`balance.js`](examples/balance.js)                                         | `npm run balance`                     |
 
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
-by default. Set `YANDEX_SMARTCAPTCHA_TARGET_URL` to override the Yandex target.
-Every other browser example requires `TARGET_URL` in `.env` for a page you are
-authorized to test. Changing a URL does not automatically adapt selectors,
-callbacks, submission, or acceptance checks to a different page.
+by default. Set `TARGET_URL` to override the reCAPTCHA target and
+`YANDEX_SMARTCAPTCHA_TARGET_URL` to override the Yandex target. Enterprise and
+GeeTest examples use `RECAPTCHA_ENTERPRISE_TARGET_URL`, `GEETEST_V3_TARGET_URL`,
+and `GEETEST_V4_TARGET_URL`. The remaining browser examples require `TARGET_URL`
+in `.env` for a page you are authorized to test. Changing a URL does not
+automatically adapt selectors, callbacks, submission, or acceptance checks to a
+different page.
 
 > [!IMPORTANT]
 > CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and

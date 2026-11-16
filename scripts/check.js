@@ -37,5 +37,11 @@ for await (const path of javascriptFiles('examples')) {
       throw new Error(`${path} has an incomplete or non-sequential STEP-${number} guide.`);
     }
   });
+  const describedSteps = new Set(described);
+  for (const number of implemented) {
+    if (!describedSteps.has(number)) {
+      throw new Error(`${path} implements undocumented STEP-${number}.`);
+    }
+  }
 }
 console.log('JavaScript syntax checks passed.');

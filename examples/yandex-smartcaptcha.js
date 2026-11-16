@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { demos } from '../config/demos.js';
 
 /**
  * This example shows how to solve Yandex SmartCaptcha without a proxy. It opens the official
@@ -26,8 +27,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 puppeteer.use(StealthPlugin());
 
-const websiteURL =
-  process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || 'https://captcha-api.yandex.ru/demo';
+const websiteURL = process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || demos.yandexSmartCaptcha;
 const siteKeySelector = '.smart-captcha[data-sitekey]';
 const tokenSelector = 'input[name="smart-token"]';
 const submitSelector = process.env.SUBMIT_SELECTOR || '#smartcaptcha-demo-submit';

@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { demos } from '../config/demos.js';
 
 /**
  * This example solves reCAPTCHA v2 through the same proxy in Puppeteer and the solver task. It extracts the widget parameters and browser User-Agent, creates Tasks.RecaptchaV2 with named proxy settings, and calls CaptchaClient.solve(). It injects the returned gRecaptchaResponse, submits the form, and requires a page-specific success element.
@@ -171,7 +172,7 @@ export const solveCaptcha = function (page, solver, proxy) {
   }
 };
 puppeteer.use(StealthPlugin());
-const DEFAULT_URL = 'https://www.google.com/recaptcha/api2/demo';
+const DEFAULT_URL = demos.recaptchaV2;
 
 /** Read proxy settings from environment variables. */
 function getProxy() {
