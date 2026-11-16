@@ -41,9 +41,8 @@ confirmed that the answer was accepted:
   official Yandex demo has not been live-tested from this repository yet.
 - `tencent.js`: its parameter interception, SDK task fields, complete callback
   response, and page success verification pass against the local browser fixture.
-  One live attempt on October 27, 2026 used
-  `https://common-web.intlgame.com/jssdk/li_captcha_new.html`. The example
-  captured `appId` and the Tencent script URL, and the API returned `ret: 0`, a
+  One authorized live attempt on October 27, 2026 used a configured Tencent
+  target. The example captured `appId` and the Tencent script URL, and the API returned `ret: 0`, a
   ticket, and `randstr`. The original page callback received the complete result,
   but this mobile-WebView page closed the CAPTCHA without exposing a visible DOM
   success state, so the configured acceptance selector timed out. The attempt is

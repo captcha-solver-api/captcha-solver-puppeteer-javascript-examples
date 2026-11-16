@@ -55,10 +55,10 @@ background. Every example launches Chrome through `puppeteer-extra` with
 `puppeteer-extra-plugin-stealth`, which reduces common automation fingerprints.
 Stealth is not a substitute for permission to automate a website.
 
-Each run prints numbered steps, the CAPTCHA parameters sent to the API, the
-complete solution including its token, how the solution is applied, and the
-demo page's acceptance message. Image bodies are shown as their base64 length;
-API keys and proxy credentials are redacted.
+Each run logs the solver result and then separately verifies page acceptance.
+Receiving a solution from the SDK proves only that the service completed the
+task; it does not prove that the target page accepted the result. Image bodies
+are never printed, and API keys and proxy credentials must remain in `.env`.
 
 Every example is intentionally self-contained and written as a linear tutorial:
 SDK and browser setup, page navigation, parameter collection, task creation,
@@ -86,9 +86,15 @@ be copied without also copying hidden project helpers.
 | Image captcha with parameters | [`normal_captcha_screenshot_params.js`](examples/normal_captcha/normal_captcha_screenshot_params.js) | `npm run example:image-params` |
 | Coordinates | [`coordinates.js`](examples/coordinates/coordinates.js) | `npm run example:coordinates` |
 
-The reCAPTCHA v2 and Yandex SmartCaptcha examples use the official provider
-demos by default. Every other browser example requires `TARGET_URL` in `.env`
-for a page you are authorized to test.
+The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
+by default. Set `YANDEX_SMARTCAPTCHA_TARGET_URL` to override the Yandex target.
+Every other browser example requires `TARGET_URL` in `.env` for a page you are
+authorized to test. Changing a URL does not automatically adapt selectors,
+callbacks, submission, or acceptance checks to a different page.
+
+> [!IMPORTANT]
+> CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and
+> do not call the paid service. Run live tests only with explicit authorization.
 
 ## Proxy
 

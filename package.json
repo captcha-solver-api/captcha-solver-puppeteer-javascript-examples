@@ -4,6 +4,19 @@
   "private": true,
   "type": "module",
   "description": "Captcha Solver browser automation examples using JavaScript and Puppeteer",
+  "keywords": [
+    "captcha",
+    "captcha-solver",
+    "puppeteer",
+    "browser-automation",
+    "recaptcha",
+    "turnstile",
+    "yandex-smartcaptcha",
+    "tencent-captcha",
+    "image-to-text",
+    "javascript",
+    "examples"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=22.12.0"

@@ -7,6 +7,7 @@
 - Keep every example understandable on its own: show SDK setup, task creation,
   solving, result logging, browser injection, and acceptance verification.
 - Document every function with JSDoc and run `npm run lint` before committing.
+- After changing JavaScript, run `npm run lint`; before committing, run `npm run check`.
 - `npm run check` and `npm test` must pass. Local tests must not call the paid API.
 - Live tests require explicit user authorization and use one attempt per example by default.
 - Confirm page acceptance; receiving an API token alone does not prove success.

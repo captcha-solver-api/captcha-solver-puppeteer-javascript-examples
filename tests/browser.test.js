@@ -199,6 +199,7 @@ test('Tencent interception sends captured fields and invokes the original callba
 });
 test('Yandex SmartCaptcha sends the site key and submits the returned token', async () => {
   process.env.SUCCESS_SELECTOR = 'p[class*="successMessage"]';
+  process.env.YANDEX_SMARTCAPTCHA_TARGET_URL = `${baseUrl}/yandex`;
   try {
     const { task, userAgent } = await run('/yandex', yandex);
     assert.equal(task.type, 'YandexSmartCaptchaTaskProxyless');
@@ -206,6 +207,7 @@ test('Yandex SmartCaptcha sends the site key and submits the returned token', as
     assert.equal(task.userAgent, userAgent);
   } finally {
     delete process.env.SUCCESS_SELECTOR;
+    delete process.env.YANDEX_SMARTCAPTCHA_TARGET_URL;
   }
 });
 test('a Cloudflare block page fails before creating a paid task', async () => {
