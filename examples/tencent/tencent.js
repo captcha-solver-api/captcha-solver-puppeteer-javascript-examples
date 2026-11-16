@@ -29,9 +29,10 @@ async function installInterceptor(page) {
 
     Object.defineProperty(window, '__captchaSolverTencent', {
       value: {
-        pending: () => [...records.values()]
-          .filter((record) => !record.submitted)
-          .map((record) => record.params),
+        pending: () =>
+          [...records.values()]
+            .filter((record) => !record.submitted)
+            .map((record) => record.params),
         submit(id, solution) {
           const record = records.get(id);
           if (!record || record.submitted) throw new Error('Tencent callback was not found.');
@@ -55,9 +56,11 @@ async function installInterceptor(page) {
               id,
               websiteURL: location.href,
               appId: String(appId),
-              captchaScript: document.currentScript?.src || [...document.scripts]
-                .map((script) => script.src)
-                .find((src) => /\/TCaptcha-global\.js(?:\?|$)/i.test(src)),
+              captchaScript:
+                document.currentScript?.src ||
+                [...document.scripts]
+                  .map((script) => script.src)
+                  .find((src) => /\/TCaptcha-global\.js(?:\?|$)/i.test(src)),
             };
             const nativeArgs = [...args];
             nativeArgs[offset + 1] = () => {};
@@ -76,46 +79,54 @@ async function installInterceptor(page) {
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
   if (!process.env.TENCENT_SUCCESS_SELECTOR) throw new Error('Set TENCENT_SUCCESS_SELECTOR.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Installing the TencentCaptcha interceptor.
 
   console.log('1. Installing the TencentCaptcha interceptor');
   await installInterceptor(page);
-  // STEP-02: Run this workflow stage.
+  // STEP-02: Opening the Tencent CAPTCHA page.
 
   console.log('2. Opening the Tencent CAPTCHA page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
   if (process.env.TENCENT_TRIGGER_SELECTOR) {
-    // STEP-03: Run this workflow stage.
+    // STEP-03: Opening the CAPTCHA widget.
 
     console.log('3. Opening the CAPTCHA widget');
     await page.click(process.env.TENCENT_TRIGGER_SELECTOR);
   }
-  const handle = await page.waitForFunction(() => window.__captchaSolverTencent.pending()[0] || false);
+  const handle = await page.waitForFunction(
+    () => window.__captchaSolverTencent.pending()[0] || false,
+  );
   const captured = await handle.jsonValue();
   await handle.dispose();
   const { id, ...taskParameters } = captured;
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Captured Tencent parameters.
 
   console.log('4. Captured Tencent parameters', taskParameters);
 
   const task = new Tasks.TencentTaskProxyless(taskParameters);
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Sending the task to Captcha Solver.
 
   console.log('5. Sending the task to Captcha Solver');
   const solution = await solver.solve(task);
-  // STEP-06: Run this workflow stage.
+  // STEP-06: Solution received.
 
   console.log('6. Solution received', solution);
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-07: Run this workflow stage.
+  // STEP-07: Passing the solution to the original Tencent callback.
 
   console.log('7. Passing the solution to the original Tencent callback');
-  await page.evaluate((recordId, answer) => {
-    window.__captchaSolverTencent.submit(recordId, answer);
-  }, id, solution);
-  await page.waitForSelector(process.env.TENCENT_SUCCESS_SELECTOR, { visible: true });
+  await page.evaluate(
+    (recordId, answer) => {
+      window.__captchaSolverTencent.submit(recordId, answer);
+    },
+    id,
+    solution,
+  );
+  await page.waitForSelector(process.env.TENCENT_SUCCESS_SELECTOR, {
+    visible: true,
+  });
   return page.$eval(process.env.TENCENT_SUCCESS_SELECTOR, (element) => element.textContent.trim());
 }
 
@@ -137,5 +148,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

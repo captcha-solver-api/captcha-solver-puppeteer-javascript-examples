@@ -25,18 +25,32 @@ async function discoverCaptcha(page) {
     const widget = document.querySelector('[data-sitekey][data-callback]');
     if (widget && typeof resolveName(widget.dataset.callback) === 'function') {
       window.__captchaCallback = resolveName(widget.dataset.callback);
-      return { websiteKey: widget.dataset.sitekey, isInvisible: widget.dataset.size === 'invisible' };
+      return {
+        websiteKey: widget.dataset.sitekey,
+        isInvisible: widget.dataset.size === 'invisible',
+      };
     }
 
     const visited = new WeakSet();
     const search = (value, depth = 0) => {
-      if (!value || typeof value !== 'object' || depth > 6 || visited.has(value) || value instanceof Node) return null;
+      if (
+        !value ||
+        typeof value !== 'object' ||
+        depth > 6 ||
+        visited.has(value) ||
+        value instanceof Node
+      )
+        return null;
       visited.add(value);
       if (typeof value.sitekey === 'string' && value.callback) {
-        const callback = typeof value.callback === 'string' ? resolveName(value.callback) : value.callback;
+        const callback =
+          typeof value.callback === 'string' ? resolveName(value.callback) : value.callback;
         if (typeof callback === 'function') {
           window.__captchaCallback = callback.bind(value);
-          return { websiteKey: value.sitekey, isInvisible: value.size === 'invisible' };
+          return {
+            websiteKey: value.sitekey,
+            isInvisible: value.size === 'invisible',
+          };
         }
       }
       for (const child of Object.values(value)) {
@@ -55,13 +69,12 @@ async function discoverCaptcha(page) {
 /** Solve reCAPTCHA and invoke the automatically discovered callback. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the callback-based reCAPTCHA page.
 
   console.log('1. Opening the callback-based reCAPTCHA page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Discovering the callback and CAPTCHA parameters.
 
   console.log('2. Discovering the callback and CAPTCHA parameters');
   const captcha = await discoverCaptcha(page);
@@ -70,17 +83,17 @@ export async function solveCaptcha(page, solver) {
     ...captcha,
     userAgent: await page.evaluate(() => navigator.userAgent),
   });
-  // STEP-03: Run this workflow stage.
+  // STEP-03: Sending the task to Captcha Solver.
 
   console.log('3. Sending the task to Captcha Solver', task.toDict());
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Passing the token to the discovered callback.
 
   console.log('5. Passing the token to the discovered callback');
   await page.evaluate((token) => window.__captchaCallback(token), solution.gRecaptchaResponse);
@@ -107,5 +120,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

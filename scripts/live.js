@@ -11,12 +11,14 @@ function redact(value) {
 }
 
 const { scripts } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-const paths = Object.fromEntries(Object.entries(scripts)
-  .filter(([name]) => name.startsWith('example:'))
-  .map(([, command]) => {
-    const path = command.split(' ').at(-1);
-    return [basename(path, '.js'), path];
-  }));
+const paths = Object.fromEntries(
+  Object.entries(scripts)
+    .filter(([name]) => name.startsWith('example:'))
+    .map(([, command]) => {
+      const path = command.split(' ').at(-1);
+      return [basename(path, '.js'), path];
+    }),
+);
 const allowed = Object.keys(paths);
 const examples = allowed.filter((name) => !name.endsWith('_proxy') && name !== 'tencent');
 const selected = process.argv.slice(2).length ? process.argv.slice(2) : examples;
@@ -29,10 +31,19 @@ for (const name of selected) {
   try {
     const { main } = await import(new URL(`../${paths[name]}`, import.meta.url));
     await main();
-    report.results.push({ name, status: 'passed', seconds: (Date.now() - started) / 1000 });
+    report.results.push({
+      name,
+      status: 'passed',
+      seconds: (Date.now() - started) / 1000,
+    });
   } catch (error) {
     console.error(`FAIL: ${name}: ${redact(error.message)}`);
-    report.results.push({ name, status: 'failed', seconds: (Date.now() - started) / 1000, error: redact(error.message) });
+    report.results.push({
+      name,
+      status: 'failed',
+      seconds: (Date.now() - started) / 1000,
+      error: redact(error.message),
+    });
     process.exitCode = 1;
   }
   await writeFile(reportPath, JSON.stringify(report, null, 2));

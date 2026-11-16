@@ -22,9 +22,12 @@ puppeteer.use(StealthPlugin());
 function getProxy() {
   const proxyAddress = process.env.PROXY_ADDRESS;
   const proxyPort = Number(process.env.PROXY_PORT);
-  if (!proxyAddress || !Number.isInteger(proxyPort)) throw new Error('Set PROXY_ADDRESS and PROXY_PORT.');
+  if (!proxyAddress || !Number.isInteger(proxyPort))
+    throw new Error('Set PROXY_ADDRESS and PROXY_PORT.');
   return {
-    proxyType: process.env.PROXY_TYPE || 'http', proxyAddress, proxyPort,
+    proxyType: process.env.PROXY_TYPE || 'http',
+    proxyAddress,
+    proxyPort,
     proxyLogin: process.env.PROXY_LOGIN || undefined,
     proxyPassword: process.env.PROXY_PASSWORD || undefined,
   };
@@ -33,14 +36,13 @@ function getProxy() {
 /** Solve reCAPTCHA and invoke its named callback. */
 export async function solveCaptcha(page, solver, proxy) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the page through the configured proxy.
 
   console.log('1. Opening the page through the configured proxy');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-sitekey][data-callback]');
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading CAPTCHA parameters and callback name.
 
   console.log('2. Reading CAPTCHA parameters and callback name');
   const captcha = await page.$eval('[data-sitekey][data-callback]', (element) => ({
@@ -49,28 +51,34 @@ export async function solveCaptcha(page, solver, proxy) {
     isInvisible: element.dataset.size === 'invisible',
   }));
   const task = new Tasks.RecaptchaV2({
-    websiteURL: page.url(), websiteKey: captcha.websiteKey,
-    isInvisible: captcha.isInvisible, userAgent: await page.evaluate(() => navigator.userAgent),
+    websiteURL: page.url(),
+    websiteKey: captcha.websiteKey,
+    isInvisible: captcha.isInvisible,
+    userAgent: await page.evaluate(() => navigator.userAgent),
     ...proxy,
   });
-  // STEP-03: Run this workflow stage.
+  // STEP-03: Sending the task to Captcha Solver.
 
   console.log('3. Sending the task to Captcha Solver');
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Calling ${captcha.callbackName}.
 
   console.log(`5. Calling ${captcha.callbackName}`);
-  await page.evaluate((name, token) => {
-    const callback = name.split('.').reduce((value, key) => value?.[key], window);
-    if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
-    callback(token);
-  }, captcha.callbackName, solution.gRecaptchaResponse);
+  await page.evaluate(
+    (name, token) => {
+      const callback = name.split('.').reduce((value, key) => value?.[key], window);
+      if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
+      callback(token);
+    },
+    captcha.callbackName,
+    solution.gRecaptchaResponse,
+  );
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
   await page.waitForSelector(selector, { visible: true });
   return page.$eval(selector, (element) => element.textContent.trim());
@@ -89,7 +97,11 @@ export async function main() {
   });
   try {
     const page = await browser.newPage();
-    if (proxy.proxyLogin) await page.authenticate({ username: proxy.proxyLogin, password: proxy.proxyPassword });
+    if (proxy.proxyLogin)
+      await page.authenticate({
+        username: proxy.proxyLogin,
+        password: proxy.proxyPassword,
+      });
     console.log('Captcha solved successfully:', await solveCaptcha(page, solver, proxy));
   } finally {
     await browser.close();
@@ -97,5 +109,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

@@ -29,14 +29,15 @@ const DEFAULT_URL = 'https://www.google.com/recaptcha/api2/demo';
  * @returns {Promise<string>} Text displayed after successful submission.
  */
 export async function solveCaptcha(page, solver) {
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the page.
 
   console.log('1. Opening the page');
-  await page.goto(process.env.TARGET_URL || DEFAULT_URL, { waitUntil: 'domcontentloaded' });
+  await page.goto(process.env.TARGET_URL || DEFAULT_URL, {
+    waitUntil: 'domcontentloaded',
+  });
   await page.waitForSelector('[data-sitekey]');
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading reCAPTCHA parameters from the page.
 
   console.log('2. Reading reCAPTCHA parameters from the page');
   const captcha = await page.$eval('[data-sitekey]', (element) => ({
@@ -50,11 +51,11 @@ export async function solveCaptcha(page, solver) {
     ...captcha,
     userAgent: await page.evaluate(() => navigator.userAgent),
   });
-  // STEP-03: Run this workflow stage.
+  // STEP-03: Sending the task to Captcha Solver.
 
   console.log('3. Sending the task to Captcha Solver', task.toDict());
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
 
@@ -63,7 +64,7 @@ export async function solveCaptcha(page, solver) {
   }
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Writing the token into g-recaptcha-response.
 
   console.log('5. Writing the token into g-recaptcha-response');
   await page.evaluate((token) => {
@@ -78,17 +79,16 @@ export async function solveCaptcha(page, solver) {
     response.dispatchEvent(new Event('change', { bubbles: true }));
   }, solution.gRecaptchaResponse);
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Submitting the form.
 
   console.log('6. Submitting the form');
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
 
-  // STEP-07: Run this workflow stage.
-
+  // STEP-07: Waiting for the page to accept the solution.
 
   console.log('7. Waiting for the page to accept the solution');
-  const successSelector = process.env.SUCCESS_SELECTOR || '.recaptcha-success, p[class*="successMessage"]';
+  const successSelector =
+    process.env.SUCCESS_SELECTOR || '.recaptcha-success, p[class*="successMessage"]';
   await page.waitForSelector(successSelector, { visible: true });
   return page.$eval(successSelector, (element) => element.textContent.trim());
 }

@@ -22,21 +22,27 @@ puppeteer.use(StealthPlugin());
 /** Solve reCAPTCHA v3 on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the reCAPTCHA v3 page.
 
   console.log('1. Opening the reCAPTCHA v3 page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading the site key and action from page scripts.
 
   console.log('2. Reading the site key and action from page scripts');
-  const captcha = await page.waitForFunction((sitekey, action) => {
-    if (sitekey && action) return { websiteKey: sitekey, pageAction: action };
-    const source = Array.from(document.scripts, (script) => script.textContent).join('\n');
-    const match = source.match(/grecaptcha\.execute\s*\(\s*['"]([^'"]+)['"]\s*,\s*\{[^}]*action\s*:\s*['"]([^'"]+)['"]/);
-    return match ? { websiteKey: match[1], pageAction: match[2] } : false;
-  }, {}, process.env.RECAPTCHA_SITEKEY || '', process.env.RECAPTCHA_ACTION || '');
+  const captcha = await page.waitForFunction(
+    (sitekey, action) => {
+      if (sitekey && action) return { websiteKey: sitekey, pageAction: action };
+      const source = Array.from(document.scripts, (script) => script.textContent).join('\n');
+      const match = source.match(
+        /grecaptcha\.execute\s*\(\s*['"]([^'"]+)['"]\s*,\s*\{[^}]*action\s*:\s*['"]([^'"]+)['"]/,
+      );
+      return match ? { websiteKey: match[1], pageAction: match[2] } : false;
+    },
+    {},
+    process.env.RECAPTCHA_SITEKEY || '',
+    process.env.RECAPTCHA_ACTION || '',
+  );
   const params = await captcha.jsonValue();
   await captcha.dispose();
 
@@ -46,28 +52,31 @@ export async function solveCaptcha(page, solver) {
     pageAction: params.pageAction,
     minScore: Number(process.env.RECAPTCHA_MIN_SCORE || 0.3),
   });
-  // STEP-03: Run this workflow stage.
+  // STEP-03: Sending the task to Captcha Solver.
 
   console.log('3. Sending the task to Captcha Solver', task.toDict());
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
   const callbackName = process.env.CALLBACK_NAME || 'verifyRecaptcha';
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Passing the token to ${callbackName}.
 
   console.log(`5. Passing the token to ${callbackName}`);
-  await page.evaluate((name, token) => {
-    const callback = name.split('.').reduce((value, key) => value?.[key], window);
-    if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
-    callback(token);
-  }, callbackName, solution.gRecaptchaResponse);
+  await page.evaluate(
+    (name, token) => {
+      const callback = name.split('.').reduce((value, key) => value?.[key], window);
+      if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
+      callback(token);
+    },
+    callbackName,
+    solution.gRecaptchaResponse,
+  );
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Waiting for page acceptance.
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
@@ -93,5 +102,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

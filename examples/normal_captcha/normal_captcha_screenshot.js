@@ -24,41 +24,37 @@ const ANSWER_SELECTOR = '#simple-captcha-field';
 /** Solve the image CAPTCHA on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the page.
 
   console.log('1. Opening the page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
   const image = await page.waitForSelector(IMAGE_SELECTOR, { visible: true });
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Taking a screenshot of the CAPTCHA image.
 
   console.log('2. Taking a screenshot of the CAPTCHA image');
   const body = await image.screenshot({ encoding: 'base64', type: 'png' });
   const task = new Tasks.ImageToText({ body });
 
-  // STEP-03: Run this workflow stage.
-
+  // STEP-03: Sending ImageToText task.
 
   console.log('3. Sending ImageToText task', {
     ...task.toDict(),
     body: `[${body.length} base64 characters]`,
   });
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Recognized text.
 
   console.log('4. Recognized text:', solution.text);
   if (!solution.text) throw new Error('Captcha Solver returned empty text.');
 
-  // STEP-05: Run this workflow stage.
-
+  // STEP-05: Typing the answer and submitting the form.
 
   console.log('5. Typing the answer and submitting the form');
   await page.locator(ANSWER_SELECTOR).fill(solution.text);
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Waiting for page acceptance.
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
@@ -84,5 +80,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

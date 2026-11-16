@@ -22,14 +22,13 @@ puppeteer.use(StealthPlugin());
 /** Solve Turnstile on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the Turnstile page.
 
   console.log('1. Opening the Turnstile page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('.cf-turnstile[data-sitekey]');
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading Turnstile widget parameters.
 
   console.log('2. Reading Turnstile widget parameters');
   const captcha = await page.$eval('.cf-turnstile[data-sitekey]', (widget) => ({
@@ -43,18 +42,17 @@ export async function solveCaptcha(page, solver) {
     userAgent: await page.evaluate(() => navigator.userAgent),
   });
 
-  // STEP-03: Run this workflow stage.
-
+  // STEP-03: Sending the task to Captcha Solver.
 
   console.log('3. Sending the task to Captcha Solver', task.toDict());
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
   if (!solution.token) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Writing the token into cf-turnstile-response.
 
   console.log('5. Writing the token into cf-turnstile-response');
   await page.evaluate((token) => {
@@ -67,8 +65,7 @@ export async function solveCaptcha(page, solver) {
     }
   }, solution.token);
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Submitting and waiting for page acceptance.
 
   console.log('6. Submitting and waiting for page acceptance');
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
@@ -95,5 +92,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

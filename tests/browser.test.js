@@ -57,7 +57,12 @@ const fixtures = {
     window.turnstile = { render: () => 'widget-id' };
     setTimeout(() => window.turnstile.render('#widget', {
       sitekey: 'fixture-key', action: 'managed', cData: 'session-data',
-      chlPageData: 'page-data', callback: token => { if (token === 'fixture-token') accept(); },
+      chlPageData: 'page-data', callback: token => {
+        if (token === 'fixture-token') {
+          document.cookie = 'cf_clearance=fresh-fixture-clearance; path=/';
+          accept();
+        }
+      },
     }), 25);
     </script>`,
   '/already': `<script>accept();</script>`,
@@ -113,12 +118,23 @@ before(async () => {
         receivedHeader = req.headers['x-sdk'];
         res.end(JSON.stringify({ errorId: 0, taskId: 1 }));
       } else if (req.url === '/getTaskResult') {
-        const solution = submitted.type === 'ImageToTextTask' ? { text: 'test' }
-          : submitted.type === 'CoordinatesTask' ? { coordinates: [{ x: 100, y: 50 }] }
-          : submitted.type === 'TurnstileTaskProxyless' ? { token: 'fixture-token', userAgent: 'FixtureBrowser/1.0' }
-          : submitted.type === 'TencentTaskProxyless' ? { appid: 'fixture-app-id', ret: 0, ticket: 'fixture-ticket', randstr: 'fixture-randstr' }
-          : submitted.type === 'YandexSmartCaptchaTaskProxyless' ? { token: 'fixture-token' }
-          : { gRecaptchaResponse: 'fixture-token' };
+        const solution =
+          submitted.type === 'ImageToTextTask'
+            ? { text: 'test' }
+            : submitted.type === 'CoordinatesTask'
+              ? { coordinates: [{ x: 100, y: 50 }] }
+              : submitted.type === 'TurnstileTaskProxyless'
+                ? { token: 'fixture-token', userAgent: 'FixtureBrowser/1.0' }
+                : submitted.type === 'TencentTaskProxyless'
+                  ? {
+                      appid: 'fixture-app-id',
+                      ret: 0,
+                      ticket: 'fixture-ticket',
+                      randstr: 'fixture-randstr',
+                    }
+                  : submitted.type === 'YandexSmartCaptchaTaskProxyless'
+                    ? { token: 'fixture-token' }
+                    : { gRecaptchaResponse: 'fixture-token' };
         res.end(JSON.stringify({ errorId: 0, status: 'ready', solution }));
       }
     } else {
@@ -139,7 +155,7 @@ before(async () => {
 
 after(async () => {
   await browser?.close();
-  if (server) await new Promise(resolve => server.close(resolve));
+  if (server) await new Promise((resolve) => server.close(resolve));
   process.env = originalEnv;
 });
 
@@ -150,13 +166,23 @@ async function run(path, solveCaptcha, ...options) {
   const page = await browser.newPage();
   page.setDefaultTimeout(3000);
   await page.setViewport({ width: 1000, height: 700, deviceScaleFactor: 1 });
-  const solver = new CaptchaClient({ clientKey: 'fixture-key', baseUrl, timeout: 3000, pollingInterval: 1 });
+  const solver = new CaptchaClient({
+    clientKey: 'fixture-key',
+    baseUrl,
+    timeout: 3000,
+    pollingInterval: 1,
+  });
   try {
     const message = await solveCaptcha(page, solver, ...options);
     assert.match(message, /Demo accepted/);
     if (submitted) assert.match(receivedHeader, /^javascript-sdk\//);
-    return { task: submitted, userAgent: await page.evaluate(() => navigator.userAgent) };
-  } finally { await page.close(); }
+    return {
+      task: submitted,
+      userAgent: await page.evaluate(() => navigator.userAgent),
+    };
+  } finally {
+    await page.close();
+  }
 }
 
 test('v2 sends a real SDK request and submits the returned token', async () => {
@@ -165,19 +191,31 @@ test('v2 sends a real SDK request and submits the returned token', async () => {
   assert.equal(task.websiteKey, 'fixture-key');
 });
 test('proxy variant passes the configured proxy into its task', async () => {
-  const { task } = await run('/v2', v2Proxy, { proxyType: 'http', proxyAddress: 'proxy.example.com', proxyPort: 8080 });
+  const { task } = await run('/v2', v2Proxy, {
+    proxyType: 'http',
+    proxyAddress: 'proxy.example.com',
+    proxyPort: 8080,
+  });
   assert.equal(task.type, 'RecaptchaV2Task');
   assert.equal(task.proxyPort, 8080);
 });
-test('known callback receives the API token', async () => { await run('/callback', callback); });
-test('automatic discovery handles cyclic callback configuration', async () => { await run('/callback', callbackAuto); });
+test('known callback receives the API token', async () => {
+  await run('/callback', callback);
+});
+test('automatic discovery handles cyclic callback configuration', async () => {
+  await run('/callback', callbackAuto);
+});
 test('v3 preserves the action extracted from the page script', async () => {
   const { task } = await run('/v3', v3);
   assert.equal(task.pageAction, 'fixture_action');
   assert.equal(task.minScore, 0.3);
 });
-test('extended v3 resolves the intercepted promise with the API answer', async () => { await run('/v3', v3Extended); });
-test('embedded Turnstile submits its response field', async () => { await run('/turnstile', turnstile); });
+test('extended v3 resolves the intercepted promise with the API answer', async () => {
+  await run('/v3', v3Extended);
+});
+test('embedded Turnstile submits its response field', async () => {
+  await run('/turnstile', turnstile);
+});
 test('Challenge interception preserves session fields and the browser User-Agent', async () => {
   const { task, userAgent } = await run('/challenge', challenge);
   assert.equal(task.data, 'session-data');
@@ -226,4 +264,6 @@ for (const [name, solveImage, hasHints] of [
     if (hasHints) assert.equal(task.numeric, 4);
   });
 }
-test('coordinate clicks account for image scaling and scroll position', async () => { await run('/coordinates', coordinates); });
+test('coordinate clicks account for image scaling and scroll position', async () => {
+  await run('/coordinates', coordinates);
+});

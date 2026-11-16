@@ -47,60 +47,66 @@ export function solveCaptcha(page, solver = client) {
   let solution;
 
   // STEP-02: Launch Chromium and open the target page.
-  return page
-    .goto(process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || websiteURL, {
-      waitUntil: 'domcontentloaded',
-    })
-    .then(() => page.waitForSelector(siteKeySelector))
-    // STEP-03: Extract the SmartCaptcha parameters from the page.
-    .then(() =>
-      Promise.all([
-        page.$eval(siteKeySelector, (element) => element.getAttribute('data-sitekey')),
-        page.evaluate(() => navigator.userAgent),
-      ]),
-    )
-    // STEP-04: Create the task and wait for the solver result.
-    .then(([websiteKey, userAgent]) => {
-      const task = new Tasks.YandexSmartCaptchaTaskProxyless({
-        websiteURL: page.url(),
-        websiteKey,
-        userAgent,
-      });
-      return solver.solve(task);
-    })
-    // STEP-05: Log and apply the returned token.
-    .then((result) => {
-      solution = result;
-      console.log('Solution:', solution);
-      // Token injection and submission are site-specific; adapt this step to the target page.
-      return page.$eval(
-        tokenSelector,
-        (input, token) => {
-          input.value = token;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-        },
-        solution.token,
-      );
-    })
-    // STEP-06: Submit the form and verify that the page accepts the token.
-    .then(() => page.click(submitSelector))
-    .then(() => {
-      if (process.env.SUCCESS_SELECTOR) {
+  return (
+    page
+      .goto(process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || websiteURL, {
+        waitUntil: 'domcontentloaded',
+      })
+      .then(() => page.waitForSelector(siteKeySelector))
+      // STEP-03: Extract the SmartCaptcha parameters from the page.
+      .then(() =>
+        Promise.all([
+          page.$eval(siteKeySelector, (element) => element.getAttribute('data-sitekey')),
+          page.evaluate(() => navigator.userAgent),
+        ]),
+      )
+      // STEP-04: Create the task and wait for the solver result.
+      .then(([websiteKey, userAgent]) => {
+        const task = new Tasks.YandexSmartCaptchaTaskProxyless({
+          websiteURL: page.url(),
+          websiteKey,
+          userAgent,
+        });
+        return solver.solve(task);
+      })
+      // STEP-05: Log and apply the returned token.
+      .then((result) => {
+        solution = result;
+        console.log('Solution:', solution);
+        // Token injection and submission are site-specific; adapt this step to the target page.
+        return page.$eval(
+          tokenSelector,
+          (input, token) => {
+            input.value = token;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          },
+          solution.token,
+        );
+      })
+      // STEP-06: Submit the form and verify that the page accepts the token.
+      .then(() => page.click(submitSelector))
+      .then(() => {
+        if (process.env.SUCCESS_SELECTOR) {
+          return page
+            .waitForSelector(process.env.SUCCESS_SELECTOR, { visible: true })
+            .then(() =>
+              page.$eval(process.env.SUCCESS_SELECTOR, (element) => element.textContent.trim()),
+            );
+        }
         return page
-          .waitForSelector(process.env.SUCCESS_SELECTOR, { visible: true })
-          .then(() =>
-            page.$eval(process.env.SUCCESS_SELECTOR, (element) => element.textContent.trim()),
-          );
-      }
-      return page
-        .waitForFunction((text) => document.body.innerText.includes(text), {}, expectedSuccessText)
-        .then(() => expectedSuccessText);
-    })
-    .then((message) => {
-      console.log(`Page confirmation: ${message}`);
-      return message;
-    });
+          .waitForFunction(
+            (text) => document.body.innerText.includes(text),
+            {},
+            expectedSuccessText,
+          )
+          .then(() => expectedSuccessText);
+      })
+      .then((message) => {
+        console.log(`Page confirmation: ${message}`);
+        return message;
+      })
+  );
 }
 
 /** Run the complete standalone Yandex SmartCaptcha example. */
@@ -109,23 +115,25 @@ export function main() {
   console.log('Target:', process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || websiteURL);
 
   // STEP-02: Launch Chromium and open the target page.
-  return puppeteer
-    .launch({
-      headless: process.env.HEADLESS === 'true',
-      executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
-      defaultViewport: { width: 1280, height: 900 },
-    })
-    .then((launchedBrowser) => {
-      browser = launchedBrowser;
-      return browser.newPage();
-    })
-    .then((page) => solveCaptcha(page))
-    // STEP-07: Handle errors and close Chromium.
-    .catch((error) => {
-      console.error('Example failed:', error.message);
-      process.exitCode = 1;
-    })
-    .finally(() => browser?.close());
+  return (
+    puppeteer
+      .launch({
+        headless: process.env.HEADLESS === 'true',
+        executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
+        defaultViewport: { width: 1280, height: 900 },
+      })
+      .then((launchedBrowser) => {
+        browser = launchedBrowser;
+        return browser.newPage();
+      })
+      .then((page) => solveCaptcha(page))
+      // STEP-07: Handle errors and close Chromium.
+      .catch((error) => {
+        console.error('Example failed:', error.message);
+        process.exitCode = 1;
+      })
+      .finally(() => browser?.close())
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

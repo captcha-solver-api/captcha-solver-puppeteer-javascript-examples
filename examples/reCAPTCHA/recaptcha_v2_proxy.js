@@ -38,14 +38,15 @@ function getProxy() {
 
 /** Solve and submit proxy-based reCAPTCHA v2 on an opened page. */
 export async function solveCaptcha(page, solver, proxy) {
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the page through the configured proxy.
 
   console.log('1. Opening the page through the configured proxy');
-  await page.goto(process.env.TARGET_URL || DEFAULT_URL, { waitUntil: 'domcontentloaded' });
+  await page.goto(process.env.TARGET_URL || DEFAULT_URL, {
+    waitUntil: 'domcontentloaded',
+  });
   await page.waitForSelector('[data-sitekey]');
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading reCAPTCHA parameters.
 
   console.log('2. Reading reCAPTCHA parameters');
   const captcha = await page.$eval('[data-sitekey]', (element) => ({
@@ -60,18 +61,17 @@ export async function solveCaptcha(page, solver, proxy) {
     userAgent: await page.evaluate(() => navigator.userAgent),
   });
 
-  // STEP-03: Run this workflow stage.
-
+  // STEP-03: Sending RecaptchaV2 task.
 
   console.log('3. Sending RecaptchaV2 task');
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Writing the token and submitting the form.
 
   console.log('5. Writing the token and submitting the form');
   await page.evaluate((token) => {
@@ -86,8 +86,7 @@ export async function solveCaptcha(page, solver, proxy) {
   }, solution.gRecaptchaResponse);
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Waiting for page acceptance.
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || '.recaptcha-success, p[class*="successMessage"]';
@@ -109,7 +108,10 @@ export async function main() {
   try {
     const page = await browser.newPage();
     if (proxy.proxyLogin) {
-      await page.authenticate({ username: proxy.proxyLogin, password: proxy.proxyPassword });
+      await page.authenticate({
+        username: proxy.proxyLogin,
+        password: proxy.proxyPassword,
+      });
     }
     console.log('Captcha solved successfully:', await solveCaptcha(page, solver, proxy));
   } finally {
@@ -118,5 +120,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

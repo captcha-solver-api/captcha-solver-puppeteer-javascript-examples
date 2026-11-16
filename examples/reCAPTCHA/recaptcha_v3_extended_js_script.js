@@ -27,10 +27,14 @@ async function installInterceptor(page) {
       Object.defineProperty(api, '__captchaPatched', { value: true });
       Object.defineProperty(api, 'execute', {
         configurable: true,
-        get: () => (websiteKey, options = {}) => {
-          window.__recaptchaV3 = { websiteKey, pageAction: options.action };
-          return new Promise((resolve) => { window.__resolveRecaptchaV3 = resolve; });
-        },
+        get:
+          () =>
+          (websiteKey, options = {}) => {
+            window.__recaptchaV3 = { websiteKey, pageAction: options.action };
+            return new Promise((resolve) => {
+              window.__resolveRecaptchaV3 = resolve;
+            });
+          },
       });
       return api;
     };
@@ -38,7 +42,9 @@ async function installInterceptor(page) {
     Object.defineProperty(window, 'grecaptcha', {
       configurable: true,
       get: () => api,
-      set: (value) => { api = patch(value); },
+      set: (value) => {
+        api = patch(value);
+      },
     });
   });
 }
@@ -46,40 +52,41 @@ async function installInterceptor(page) {
 /** Solve intercepted reCAPTCHA v3 on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Installing the execute() interceptor.
 
   console.log('1. Installing the execute() interceptor');
   await installInterceptor(page);
-  // STEP-02: Run this workflow stage.
+  // STEP-02: Opening the reCAPTCHA v3 page.
 
   console.log('2. Opening the reCAPTCHA v3 page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
-  if (!await page.evaluate(() => Boolean(window.__recaptchaV3))) {
+  if (!(await page.evaluate(() => Boolean(window.__recaptchaV3)))) {
     await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
   }
   const handle = await page.waitForFunction(() => window.__recaptchaV3 || false);
   const params = await handle.jsonValue();
   await handle.dispose();
-  // STEP-03: Run this workflow stage.
+  // STEP-03: Captured reCAPTCHA parameters.
 
   console.log('3. Captured reCAPTCHA parameters', params);
 
   const task = new Tasks.RecaptchaV3Proxyless({
-    websiteURL: page.url(), ...params,
+    websiteURL: page.url(),
+    ...params,
     minScore: Number(process.env.RECAPTCHA_MIN_SCORE || 0.3),
   });
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Sending the task to Captcha Solver.
 
   console.log('4. Sending the task to Captcha Solver');
   const solution = await solver.solve(task);
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Solution received.
 
   console.log('5. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
-  // STEP-06: Run this workflow stage.
+  // STEP-06: Resolving the intercepted execute() promise.
 
   console.log('6. Resolving the intercepted execute() promise');
   await page.evaluate((token) => window.__resolveRecaptchaV3(token), solution.gRecaptchaResponse);
@@ -106,5 +113,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

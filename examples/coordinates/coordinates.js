@@ -23,14 +23,15 @@ const IMAGE_SELECTOR = 'img[alt="clickcaptcha example"]';
 /** Solve the coordinate CAPTCHA on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the page.
 
   console.log('1. Opening the page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
-  const imageElement = await page.waitForSelector(IMAGE_SELECTOR, { visible: true });
+  const imageElement = await page.waitForSelector(IMAGE_SELECTOR, {
+    visible: true,
+  });
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading the original image pixels and dimensions.
 
   console.log('2. Reading the original image pixels and dimensions');
   const image = await page.$eval(IMAGE_SELECTOR, (element) => {
@@ -46,14 +47,14 @@ export async function solveCaptcha(page, solver) {
   });
 
   const task = new Tasks.CoordinatesTask({ body: image.body });
-  // STEP-03: Run this workflow stage.
+  // STEP-03: Sending Coordinates task.
 
   console.log('3. Sending Coordinates task', {
     ...task.toDict(),
     body: `[${image.body.length} base64 characters]`,
   });
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Coordinates received.
 
   console.log('4. Coordinates received', solution.coordinates);
   if (!solution.coordinates?.length) throw new Error('Captcha Solver returned no coordinates.');
@@ -62,18 +63,16 @@ export async function solveCaptcha(page, solver) {
   const box = await imageElement.boundingBox();
   if (!box) throw new Error('The CAPTCHA image is not visible.');
 
-  // STEP-05: Run this workflow stage.
-
+  // STEP-05: Scaling and clicking the returned coordinates.
 
   console.log('5. Scaling and clicking the returned coordinates');
   for (const point of solution.coordinates) {
-    const x = box.x + point.x * box.width / image.width;
-    const y = box.y + point.y * box.height / image.height;
+    const x = box.x + (point.x * box.width) / image.width;
+    const y = box.y + (point.y * box.height) / image.height;
     await page.mouse.click(x, y);
   }
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Submitting and waiting for page acceptance.
 
   console.log('6. Submitting and waiting for page acceptance');
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
@@ -100,5 +99,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

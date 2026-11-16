@@ -22,14 +22,13 @@ puppeteer.use(StealthPlugin());
 /** Solve reCAPTCHA and invoke the page callback with the returned token. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
-  // STEP-01: Run this workflow stage.
+  // STEP-01: Opening the callback-based reCAPTCHA page.
 
   console.log('1. Opening the callback-based reCAPTCHA page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-sitekey]');
 
-  // STEP-02: Run this workflow stage.
-
+  // STEP-02: Reading reCAPTCHA parameters.
 
   console.log('2. Reading reCAPTCHA parameters');
   const captcha = await page.$eval('[data-sitekey]', (element) => ({
@@ -42,32 +41,34 @@ export async function solveCaptcha(page, solver) {
     userAgent: await page.evaluate(() => navigator.userAgent),
   });
 
-  // STEP-03: Run this workflow stage.
-
+  // STEP-03: Sending the task to Captcha Solver.
 
   console.log('3. Sending the task to Captcha Solver', task.toDict());
   const solution = await solver.solve(task);
-  // STEP-04: Run this workflow stage.
+  // STEP-04: Solution received.
 
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
   const callbackName = process.env.CALLBACK_NAME || 'verifyDemoRecaptcha';
-  // STEP-05: Run this workflow stage.
+  // STEP-05: Calling ${callbackName} with the returned token.
 
   console.log(`5. Calling ${callbackName} with the returned token`);
-  await page.evaluate((name, token) => {
-    const parts = name.split('.');
-    let owner = window;
-    for (const part of parts.slice(0, -1)) owner = owner?.[part];
-    const callback = owner?.[parts.at(-1)];
-    if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
-    callback.call(owner, token);
-  }, callbackName, solution.gRecaptchaResponse);
+  await page.evaluate(
+    (name, token) => {
+      const parts = name.split('.');
+      let owner = window;
+      for (const part of parts.slice(0, -1)) owner = owner?.[part];
+      const callback = owner?.[parts.at(-1)];
+      if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
+      callback.call(owner, token);
+    },
+    callbackName,
+    solution.gRecaptchaResponse,
+  );
 
-  // STEP-06: Run this workflow stage.
-
+  // STEP-06: Waiting for page acceptance.
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
@@ -93,5 +94,8 @@ export async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

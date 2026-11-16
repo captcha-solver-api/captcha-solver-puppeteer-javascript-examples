@@ -68,23 +68,23 @@ be copied without also copying hidden project helpers.
 
 ## Examples
 
-| Captcha | File | Command |
-|---|---|---|
-| reCAPTCHA v2 | [`recaptcha_v2.js`](examples/reCAPTCHA/recaptcha_v2.js) | `npm run example:recaptcha-v2` |
-| reCAPTCHA v2 + proxy | [`recaptcha_v2_proxy.js`](examples/reCAPTCHA/recaptcha_v2_proxy.js) | `npm run example:recaptcha-v2-proxy` |
-| reCAPTCHA v2 callback | [`recaptcha_v2_callback_variant1.js`](examples/reCAPTCHA/recaptcha_v2_callback_variant1.js) | `npm run example:callback` |
-| reCAPTCHA v2 callback, automatic discovery | [`recaptcha_v2_callback_variant2.js`](examples/reCAPTCHA/recaptcha_v2_callback_variant2.js) | `npm run example:callback-auto` |
-| reCAPTCHA v2 callback + proxy | [`recaptcha_v2_callback_proxy.js`](examples/reCAPTCHA/recaptcha_v2_callback_proxy.js) | `npm run example:callback-proxy` |
-| reCAPTCHA v3 | [`recaptcha_v3.js`](examples/reCAPTCHA/recaptcha_v3.js) | `npm run example:recaptcha-v3` |
-| reCAPTCHA v3 interception | [`recaptcha_v3_extended_js_script.js`](examples/reCAPTCHA/recaptcha_v3_extended_js_script.js) | `npm run example:recaptcha-v3-extended` |
-| Cloudflare Turnstile | [`cloudflare_turnstile.js`](examples/cloudflare/cloudflare_turnstile.js) | `npm run example:turnstile` |
-| Cloudflare Challenge | [`cloudflare_challenge_page.js`](examples/cloudflare/cloudflare_challenge_page.js) | `npm run example:challenge` |
-| Tencent CAPTCHA | [`tencent.js`](examples/tencent/tencent.js) | `npm run example:tencent` |
-| Yandex SmartCaptcha | [`yandex_smartcaptcha.js`](examples/yandex/yandex_smartcaptcha.js) | `npm run example:yandex-smartcaptcha` |
-| Image captcha, screenshot | [`normal_captcha_screenshot.js`](examples/normal_captcha/normal_captcha_screenshot.js) | `npm run example:image` |
-| Image captcha, original pixels through canvas | [`normal_captcha_canvas.js`](examples/normal_captcha/normal_captcha_canvas.js) | `npm run example:image-canvas` |
-| Image captcha with parameters | [`normal_captcha_screenshot_params.js`](examples/normal_captcha/normal_captcha_screenshot_params.js) | `npm run example:image-params` |
-| Coordinates | [`coordinates.js`](examples/coordinates/coordinates.js) | `npm run example:coordinates` |
+| Captcha                                       | File                                                                                                 | Command                                 |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| reCAPTCHA v2                                  | [`recaptcha_v2.js`](examples/reCAPTCHA/recaptcha_v2.js)                                              | `npm run example:recaptcha-v2`          |
+| reCAPTCHA v2 + proxy                          | [`recaptcha_v2_proxy.js`](examples/reCAPTCHA/recaptcha_v2_proxy.js)                                  | `npm run example:recaptcha-v2-proxy`    |
+| reCAPTCHA v2 callback                         | [`recaptcha_v2_callback_variant1.js`](examples/reCAPTCHA/recaptcha_v2_callback_variant1.js)          | `npm run example:callback`              |
+| reCAPTCHA v2 callback, automatic discovery    | [`recaptcha_v2_callback_variant2.js`](examples/reCAPTCHA/recaptcha_v2_callback_variant2.js)          | `npm run example:callback-auto`         |
+| reCAPTCHA v2 callback + proxy                 | [`recaptcha_v2_callback_proxy.js`](examples/reCAPTCHA/recaptcha_v2_callback_proxy.js)                | `npm run example:callback-proxy`        |
+| reCAPTCHA v3                                  | [`recaptcha_v3.js`](examples/reCAPTCHA/recaptcha_v3.js)                                              | `npm run example:recaptcha-v3`          |
+| reCAPTCHA v3 interception                     | [`recaptcha_v3_extended_js_script.js`](examples/reCAPTCHA/recaptcha_v3_extended_js_script.js)        | `npm run example:recaptcha-v3-extended` |
+| Cloudflare Turnstile                          | [`cloudflare_turnstile.js`](examples/cloudflare/cloudflare_turnstile.js)                             | `npm run example:turnstile`             |
+| Cloudflare Challenge                          | [`cloudflare_challenge_page.js`](examples/cloudflare/cloudflare_challenge_page.js)                   | `npm run example:challenge`             |
+| Tencent CAPTCHA                               | [`tencent.js`](examples/tencent/tencent.js)                                                          | `npm run example:tencent`               |
+| Yandex SmartCaptcha                           | [`yandex_smartcaptcha.js`](examples/yandex/yandex_smartcaptcha.js)                                   | `npm run example:yandex-smartcaptcha`   |
+| Image captcha, screenshot                     | [`normal_captcha_screenshot.js`](examples/normal_captcha/normal_captcha_screenshot.js)               | `npm run example:image`                 |
+| Image captcha, original pixels through canvas | [`normal_captcha_canvas.js`](examples/normal_captcha/normal_captcha_canvas.js)                       | `npm run example:image-canvas`          |
+| Image captcha with parameters                 | [`normal_captcha_screenshot_params.js`](examples/normal_captcha/normal_captcha_screenshot_params.js) | `npm run example:image-params`          |
+| Coordinates                                   | [`coordinates.js`](examples/coordinates/coordinates.js)                                              | `npm run example:coordinates`           |
 
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
 by default. Set `YANDEX_SMARTCAPTCHA_TARGET_URL` to override the Yandex target.
@@ -112,9 +112,13 @@ The browser and API task use the same proxy.
 
 ```bash
 npm run lint
+npm run format:check
 npm run check
 npm test
 ```
+
+`npm run check` runs linting, formatting, syntax and workflow-guide validation, and the complete
+local browser regression suite. These checks use local fixtures and do not create paid tasks.
 
 `normal_captcha_screenshot.js` sends the pixels as rendered by Chrome.
 `normal_captcha_canvas.js` draws the loaded image into a canvas and sends its
