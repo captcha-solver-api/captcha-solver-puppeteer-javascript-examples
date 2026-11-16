@@ -7,7 +7,7 @@ and Chrome 155.
 
 - `npm run lint`: passed.
 - `npm run check`: passed (includes lint).
-- `npm test`: 19 browser integration tests passed.
+- `npm test`: 18 browser integration tests passed.
 - `npm audit --package-lock-only`: reports four low-severity findings inherited
   through `puppeteer-extra`; npm offers only a breaking downgrade as an automatic fix.
 - Tests use a local page fixture and a local API stub. They do not spend API balance.
@@ -33,15 +33,14 @@ confirmed that the answer was accepted:
 - `image-to-text.js`.
 - `image-to-text-canvas.js`.
 - `image-to-text-params.js`.
-- `coordinates.js`.
 
 ## Pending checks
 
 - `recaptcha-v2-enterprise.js`, `geetest-v3.js`, and `geetest-v4.js`: task
   construction, solution submission, and acceptance verification pass against
   local browser fixtures. They have not been live-tested from this repository.
-- `yandex-smartcaptcha-image.js` and `balance.js`: syntax, lint, formatting, and
-  workflow-guide checks pass. Their paid API calls were not run locally.
+- `coordinates.js`, `yandex-smartcaptcha-image.js`, and `balance.js`: syntax, lint, formatting,
+  and workflow-guide checks pass. Their paid API calls were not run locally.
 - `yandex-smartcaptcha.js`: task construction, token injection, form submission,
   and page success verification pass against the local browser fixture. The
   official Yandex demo has not been live-tested from this repository yet.

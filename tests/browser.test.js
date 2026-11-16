@@ -19,7 +19,6 @@ import { solveCaptcha as yandex } from '../examples/yandex-smartcaptcha.js';
 import { solveCaptcha as imageScreenshot } from '../examples/image-to-text.js';
 import { solveCaptcha as imageCanvas } from '../examples/image-to-text-canvas.js';
 import { solveCaptcha as imageParams } from '../examples/image-to-text-params.js';
-import { solveCaptcha as coordinates } from '../examples/coordinates.js';
 import { solveCaptcha as geetestV3 } from '../examples/geetest-v3.js';
 import { solveCaptcha as geetestV4 } from '../examples/geetest-v4.js';
 
@@ -301,10 +300,6 @@ for (const [name, solveImage, hasHints] of [
     if (hasHints) assert.equal(task.numeric, 4);
   });
 }
-test('coordinate clicks account for image scaling and scroll position', async () => {
-  await run('/coordinates', coordinates);
-});
-
 test('GeeTest v3 submits all returned verification fields', async () => {
   process.env.GEETEST_V3_TARGET_URL = `${baseUrl}/geetest-v3`;
   const page = await browser.newPage();

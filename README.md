@@ -12,7 +12,7 @@ Use the examples only on demo pages or websites you are authorized to test.
 > Live examples create paid CAPTCHA tasks. Run them only with an API key you are authorized to use
 > and against a target you own or have explicit permission to test.
 
-Each example shows how to:
+Each browser example shows how to:
 
 1. Open a page and collect captcha parameters.
 2. Send a task to Captcha Solver.
@@ -78,11 +78,11 @@ Receiving a solution from the SDK proves only that the service completed the
 task; it does not prove that the target page accepted the result. Image bodies
 are never printed, and API keys and proxy credentials must remain in `.env`.
 
-Every example is intentionally self-contained and written as a linear tutorial:
-SDK and browser setup, page navigation, parameter collection, task creation,
-`solver.solve()`, solution application, form submission, and acceptance check
-are all visible in the same file. Some code is repeated so that an example can
-be copied without also copying hidden project helpers.
+Every example is intentionally self-contained and written as a linear tutorial. Browser examples
+show SDK and browser setup, page navigation, parameter collection, task creation, `solver.solve()`,
+solution application, form submission, and acceptance checks in one file. Image-only, coordinate,
+and balance examples show their complete SDK flow without inventing browser steps. Some code is
+repeated so that an example can be copied without also copying hidden project helpers.
 
 ## Examples
 

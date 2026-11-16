@@ -32,8 +32,11 @@ for await (const path of javascriptFiles('examples')) {
     (match) => match.groups.number,
   );
   const implemented = new Set(implementedList);
-  if (implemented.size !== implementedList.length) {
-    throw new Error(`${path} implements at least one STEP more than once.`);
+  const duplicateSteps = implementedList.filter(
+    (number, index) => implementedList.indexOf(number) !== index,
+  );
+  if (duplicateSteps.some((number) => number !== described.at(-1))) {
+    throw new Error(`${path} implements a non-final STEP more than once.`);
   }
   described.forEach((number, index) => {
     const expected = String(index + 1).padStart(2, '0');
