@@ -54,6 +54,18 @@ CAPTCHA_API_KEY=your_api_key
 
 ```bash
 npm run recaptcha-v2
+npm run recaptcha-v2-enterprise
+npm run recaptcha-v3
+npm run turnstile
+npm run turnstile-challenge
+npm run yandex
+npm run yandex-image
+npm run tencent
+npm run geetest-v3
+npm run geetest-v4
+npm run image-to-text
+npm run coordinates
+npm run balance
 ```
 
 Chrome opens in visible mode. Set `HEADLESS=true` in `.env` to run it in the
@@ -77,6 +89,7 @@ be copied without also copying hidden project helpers.
 | Captcha                                       | File                                                                        | Command                               |
 | --------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
 | reCAPTCHA v2                                  | [`recaptcha-v2.js`](examples/recaptcha-v2.js)                               | `npm run recaptcha-v2`                |
+| reCAPTCHA v2 Enterprise                       | [`recaptcha-v2-enterprise.js`](examples/recaptcha-v2-enterprise.js)         | `npm run recaptcha-v2-enterprise`     |
 | reCAPTCHA v2 + proxy                          | [`recaptcha-v2-proxy.js`](examples/recaptcha-v2-proxy.js)                   | `npm run recaptcha-v2-proxy`          |
 | reCAPTCHA v2 callback                         | [`recaptcha-v2-callback.js`](examples/recaptcha-v2-callback.js)             | `npm run recaptcha-v2-callback`       |
 | reCAPTCHA v2 callback, automatic discovery    | [`recaptcha-v2-callback-auto.js`](examples/recaptcha-v2-callback-auto.js)   | `npm run recaptcha-v2-callback-auto`  |
@@ -87,10 +100,14 @@ be copied without also copying hidden project helpers.
 | Cloudflare Challenge                          | [`turnstile-challenge.js`](examples/turnstile-challenge.js)                 | `npm run turnstile-challenge`         |
 | Tencent CAPTCHA                               | [`tencent.js`](examples/tencent.js)                                         | `npm run tencent`                     |
 | Yandex SmartCaptcha                           | [`yandex-smartcaptcha.js`](examples/yandex-smartcaptcha.js)                 | `npm run yandex`                      |
+| Yandex image challenge                        | [`yandex-smartcaptcha-image.js`](examples/yandex-smartcaptcha-image.js)     | `npm run yandex-image`                |
+| GeeTest v3                                    | [`geetest-v3.js`](examples/geetest-v3.js)                                   | `npm run geetest-v3`                  |
+| GeeTest v4                                    | [`geetest-v4.js`](examples/geetest-v4.js)                                   | `npm run geetest-v4`                  |
 | Image captcha, screenshot                     | [`image-to-text.js`](examples/image-to-text.js)                             | `npm run image-to-text`               |
 | Image captcha, original pixels through canvas | [`image-to-text-canvas.js`](examples/image-to-text-canvas.js)               | `npm run image-to-text-canvas`        |
 | Image captcha with parameters                 | [`image-to-text-params.js`](examples/image-to-text-params.js)               | `npm run image-to-text-params`        |
 | Coordinates                                   | [`coordinates.js`](examples/coordinates.js)                                 | `npm run coordinates`                 |
+| Balance                                       | [`balance.js`](examples/balance.js)                                         | `npm run balance`                     |
 
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
 by default. Set `YANDEX_SMARTCAPTCHA_TARGET_URL` to override the Yandex target.

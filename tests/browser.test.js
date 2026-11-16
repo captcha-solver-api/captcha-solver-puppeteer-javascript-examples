@@ -6,6 +6,7 @@ import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { CaptchaClient } from '@captcha-solver-api/javascript-sdk';
 import { solveCaptcha as v2 } from '../examples/recaptcha-v2.js';
+import { solveCaptcha as enterprise } from '../examples/recaptcha-v2-enterprise.js';
 import { solveCaptcha as v2Proxy } from '../examples/recaptcha-v2-proxy.js';
 import { solveCaptcha as callback } from '../examples/recaptcha-v2-callback.js';
 import { solveCaptcha as callbackAuto } from '../examples/recaptcha-v2-callback-auto.js';
@@ -19,6 +20,8 @@ import { solveCaptcha as imageScreenshot } from '../examples/image-to-text.js';
 import { solveCaptcha as imageCanvas } from '../examples/image-to-text-canvas.js';
 import { solveCaptcha as imageParams } from '../examples/image-to-text-params.js';
 import { solveCaptcha as coordinates } from '../examples/coordinates.js';
+import { solveCaptcha as geetestV3 } from '../examples/geetest-v3.js';
+import { solveCaptcha as geetestV4 } from '../examples/geetest-v4.js';
 
 puppeteer.use(StealthPlugin());
 
@@ -90,6 +93,11 @@ const fixtures = {
     <script>document.querySelector('button').onclick = () => {
       if (document.querySelector('[name="smart-token"]').value === 'fixture-token') accept();
     };</script>`,
+  '/geetest-v3': `<script>
+    window.initGeetest = () => {};
+    initGeetest({ gt: 'fixture-gt', challenge: 'fixture-challenge' }, () => {});
+    </script>`,
+  '/geetest-v4': '<script src="/load?captcha_id=fixture-captcha-id"></script>',
 };
 
 before(async () => {
@@ -111,6 +119,18 @@ before(async () => {
       let body = '';
       for await (const chunk of req) body += chunk;
       const data = JSON.parse(body);
+      if (req.url === '/api/v1/captcha-demo/gee-test/verify') {
+        assert.equal(data.geetest_validate, 'fixture-validate');
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: true }));
+        return;
+      }
+      if (req.url === '/api/v1/captcha-demo/gee-test-v4/verify') {
+        assert.equal(data.captcha_id, 'fixture-captcha-id');
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ result: 'success' }));
+        return;
+      }
       assert.equal(data.clientKey, 'fixture-key');
       res.setHeader('Content-Type', 'application/json');
       if (req.url === '/createTask') {
@@ -134,7 +154,15 @@ before(async () => {
                     }
                   : submitted.type === 'YandexSmartCaptchaTaskProxyless'
                     ? { token: 'fixture-token' }
-                    : { gRecaptchaResponse: 'fixture-token' };
+                    : submitted.type === 'GeeTestTaskProxyless' && submitted.version === 4
+                      ? { captcha_id: 'fixture-captcha-id', lot_number: 'fixture-lot' }
+                      : submitted.type === 'GeeTestTaskProxyless'
+                        ? {
+                            challenge: 'fixture-challenge',
+                            validate: 'fixture-validate',
+                            seccode: 'fixture-seccode',
+                          }
+                        : { gRecaptchaResponse: 'fixture-token' };
         res.end(JSON.stringify({ errorId: 0, status: 'ready', solution }));
       }
     } else {
@@ -189,6 +217,15 @@ test('v2 sends a real SDK request and submits the returned token', async () => {
   const { task } = await run('/v2', v2);
   assert.equal(task.type, 'RecaptchaV2TaskProxyless');
   assert.equal(task.websiteKey, 'fixture-key');
+});
+test('Enterprise v2 creates the Enterprise task and verifies acceptance', async () => {
+  process.env.RECAPTCHA_ENTERPRISE_TARGET_URL = `${baseUrl}/v2`;
+  try {
+    const { task } = await run('/v2', enterprise);
+    assert.equal(task.type, 'RecaptchaV2EnterpriseTaskProxyless');
+  } finally {
+    delete process.env.RECAPTCHA_ENTERPRISE_TARGET_URL;
+  }
 });
 test('proxy variant passes the configured proxy into its task', async () => {
   const { task } = await run('/v2', v2Proxy, {
@@ -266,4 +303,42 @@ for (const [name, solveImage, hasHints] of [
 }
 test('coordinate clicks account for image scaling and scroll position', async () => {
   await run('/coordinates', coordinates);
+});
+
+test('GeeTest v3 submits all returned verification fields', async () => {
+  process.env.GEETEST_V3_TARGET_URL = `${baseUrl}/geetest-v3`;
+  const page = await browser.newPage();
+  try {
+    const solver = new CaptchaClient({
+      clientKey: 'fixture-key',
+      baseUrl,
+      timeout: 3000,
+      pollingInterval: 1,
+    });
+    assert.match(await geetestV3(page, solver), /accepted/);
+    assert.equal(submitted.type, 'GeeTestTaskProxyless');
+    assert.equal(submitted.gt, 'fixture-gt');
+  } finally {
+    delete process.env.GEETEST_V3_TARGET_URL;
+    await page.close();
+  }
+});
+
+test('GeeTest v4 submits the complete solver response', async () => {
+  process.env.GEETEST_V4_TARGET_URL = `${baseUrl}/geetest-v4`;
+  const page = await browser.newPage();
+  try {
+    const solver = new CaptchaClient({
+      clientKey: 'fixture-key',
+      baseUrl,
+      timeout: 3000,
+      pollingInterval: 1,
+    });
+    assert.match(await geetestV4(page, solver), /accepted/);
+    assert.equal(submitted.version, 4);
+    assert.equal(submitted.initParameters.captcha_id, 'fixture-captcha-id');
+  } finally {
+    delete process.env.GEETEST_V4_TARGET_URL;
+    await page.close();
+  }
 });

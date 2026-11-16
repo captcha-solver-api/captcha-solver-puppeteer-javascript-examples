@@ -1,6 +1,6 @@
 {
   "name": "captcha-solver-puppeteer-javascript-examples",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Captcha Solver browser automation examples using JavaScript and Puppeteer",
@@ -11,6 +11,7 @@
     "browser-automation",
     "recaptcha",
     "turnstile",
+    "geetest",
     "yandex-smartcaptcha",
     "tencent-captcha",
     "image-to-text",
@@ -24,6 +25,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env index.js",
     "recaptcha-v2": "node --env-file-if-exists=.env examples/recaptcha-v2.js",
+    "recaptcha-v2-enterprise": "node --env-file-if-exists=.env examples/recaptcha-v2-enterprise.js",
     "recaptcha-v2-proxy": "node --env-file-if-exists=.env examples/recaptcha-v2-proxy.js",
     "recaptcha-v2-callback": "node --env-file-if-exists=.env examples/recaptcha-v2-callback.js",
     "recaptcha-v2-callback-auto": "node --env-file-if-exists=.env examples/recaptcha-v2-callback-auto.js",
@@ -34,10 +36,14 @@
     "turnstile-challenge": "node --env-file-if-exists=.env examples/turnstile-challenge.js",
     "tencent": "node --env-file-if-exists=.env examples/tencent.js",
     "yandex": "node --env-file-if-exists=.env examples/yandex-smartcaptcha.js",
+    "yandex-image": "node --env-file-if-exists=.env examples/yandex-smartcaptcha-image.js",
     "image-to-text": "node --env-file-if-exists=.env examples/image-to-text.js",
     "image-to-text-canvas": "node --env-file-if-exists=.env examples/image-to-text-canvas.js",
     "image-to-text-params": "node --env-file-if-exists=.env examples/image-to-text-params.js",
     "coordinates": "node --env-file-if-exists=.env examples/coordinates.js",
+    "geetest-v3": "node --env-file-if-exists=.env examples/geetest-v3.js",
+    "geetest-v4": "node --env-file-if-exists=.env examples/geetest-v4.js",
+    "balance": "node --env-file-if-exists=.env examples/balance.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -46,7 +52,7 @@
     "test:live": "node --env-file-if-exists=.env scripts/live.js"
   },
   "dependencies": {
-    "@captcha-solver-api/javascript-sdk": "^1.0.1",
+    "@captcha-solver-api/javascript-sdk": "^1.1.0",
     "puppeteer": "^25.13.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
@@ -62,6 +68,7 @@
     "prettier": "^3.6.2"
   },
   "overrides": {
+    "minimatch": "^11.0.1",
     "zod": "4.6.6"
   }
 }
