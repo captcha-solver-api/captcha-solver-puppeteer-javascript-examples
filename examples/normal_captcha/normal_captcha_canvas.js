@@ -1,12 +1,21 @@
-/**
- * Solve an image CAPTCHA using its original pixels.
- * The image is drawn to a canvas, sent to Captcha Solver, and the recognized
- * text is typed into the form. Use TARGET_URL for a page you may automate.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+/**
+ * This example solves an image-to-text CAPTCHA without a proxy. It reads the original image pixels through a browser canvas, creates Tasks.ImageToText, and calls CaptchaClient.solve(). It logs the recognized text, types it into the form, submits the answer, and requires a page-specific success element.
+ *
+ * To use this example on another page, change the target URL and selectors, confirm that canvas access is not blocked by CORS, and adapt the submission and acceptance checks to that page.
+ *
+ * How it works:
+ * STEP-01 - Opening the page.
+ * STEP-02 - Reading the original image pixels through canvas.
+ * STEP-03 - Sending ImageToText task.
+ * STEP-04 - Recognized text.
+ * STEP-05 - Typing the answer and submitting the form.
+ * STEP-06 - Waiting for page acceptance.
+ */
 
 puppeteer.use(StealthPlugin());
 const IMAGE_SELECTOR = 'img[alt="normal captcha example"]';
@@ -16,9 +25,15 @@ const ANSWER_SELECTOR = '#simple-captcha-field';
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
 
+  // STEP-01: Run this workflow stage.
+
+
   console.log('1. Opening the page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector(IMAGE_SELECTOR, { visible: true });
+
+  // STEP-02: Run this workflow stage.
+
 
   console.log('2. Reading the original image pixels through canvas');
   const body = await page.$eval(IMAGE_SELECTOR, (image) => {
@@ -30,14 +45,24 @@ export async function solveCaptcha(page, solver) {
   });
 
   const task = new Tasks.ImageToText({ body });
+  // STEP-03: Run this workflow stage.
+
   console.log('3. Sending ImageToText task', { ...task.toDict(), body: `[${body.length} base64 characters]` });
   const solution = await solver.solve(task);
+  // STEP-04: Run this workflow stage.
+
   console.log('4. Recognized text:', solution.text);
   if (!solution.text) throw new Error('Captcha Solver returned empty text.');
+
+  // STEP-05: Run this workflow stage.
+
 
   console.log('5. Typing the answer and submitting the form');
   await page.locator(ANSWER_SELECTOR).fill(solution.text);
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
+
+  // STEP-06: Run this workflow stage.
+
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';

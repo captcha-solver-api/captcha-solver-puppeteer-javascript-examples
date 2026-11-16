@@ -1,11 +1,21 @@
-/**
- * Solve reCAPTCHA v2 through the same HTTP proxy in Chrome and Captcha Solver.
- * Every important step is kept in this file so it can be copied and adapted.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+/**
+ * This example solves reCAPTCHA v2 through the same proxy in Puppeteer and the solver task. It extracts the widget parameters and browser User-Agent, creates Tasks.RecaptchaV2 with named proxy settings, and calls CaptchaClient.solve(). It injects the returned gRecaptchaResponse, submits the form, and requires a page-specific success element.
+ *
+ * To use this example on another page, change the target URL, proxy configuration, selectors, and acceptance signal. Token injection and submission are site-specific.
+ *
+ * How it works:
+ * STEP-01 - Opening the page through the configured proxy.
+ * STEP-02 - Reading reCAPTCHA parameters.
+ * STEP-03 - Sending RecaptchaV2 task.
+ * STEP-04 - Solution received.
+ * STEP-05 - Writing the token and submitting the form.
+ * STEP-06 - Waiting for page acceptance.
+ */
 
 puppeteer.use(StealthPlugin());
 const DEFAULT_URL = 'https://www.google.com/recaptcha/api2/demo';
@@ -28,9 +38,14 @@ function getProxy() {
 
 /** Solve and submit proxy-based reCAPTCHA v2 on an opened page. */
 export async function solveCaptcha(page, solver, proxy) {
+  // STEP-01: Run this workflow stage.
+
   console.log('1. Opening the page through the configured proxy');
   await page.goto(process.env.TARGET_URL || DEFAULT_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-sitekey]');
+
+  // STEP-02: Run this workflow stage.
+
 
   console.log('2. Reading reCAPTCHA parameters');
   const captcha = await page.$eval('[data-sitekey]', (element) => ({
@@ -45,12 +60,19 @@ export async function solveCaptcha(page, solver, proxy) {
     userAgent: await page.evaluate(() => navigator.userAgent),
   });
 
+  // STEP-03: Run this workflow stage.
+
+
   console.log('3. Sending RecaptchaV2 task');
   const solution = await solver.solve(task);
+  // STEP-04: Run this workflow stage.
+
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // STEP-05: Run this workflow stage.
+
   console.log('5. Writing the token and submitting the form');
   await page.evaluate((token) => {
     let response = document.querySelector('[name="g-recaptcha-response"]');
@@ -63,6 +85,9 @@ export async function solveCaptcha(page, solver, proxy) {
     response.dispatchEvent(new Event('change', { bubbles: true }));
   }, solution.gRecaptchaResponse);
   await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
+
+  // STEP-06: Run this workflow stage.
+
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || '.recaptcha-success, p[class*="successMessage"]';

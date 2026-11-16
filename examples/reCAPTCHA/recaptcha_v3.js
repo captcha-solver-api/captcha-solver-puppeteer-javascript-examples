@@ -1,20 +1,34 @@
-/**
- * Solve reCAPTCHA v3 with a known page callback.
- * The example reads the site key and action from page scripts, solves the task,
- * invokes the callback, and verifies that the page accepted the token.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+/**
+ * This example solves reCAPTCHA v3 without a proxy. It extracts the site key and action from grecaptcha.execute(), creates Tasks.RecaptchaV3Proxyless with the configured minimum score, and calls CaptchaClient.solve(). It passes gRecaptchaResponse to the page callback and separately requires a page-specific success element.
+ *
+ * To use this example on another page, change the target URL and verify the site key, action, score, callback, and acceptance signal. Callback delivery alone does not prove server-side acceptance.
+ *
+ * How it works:
+ * STEP-01 - Opening the reCAPTCHA v3 page.
+ * STEP-02 - Reading the site key and action from page scripts.
+ * STEP-03 - Sending the task to Captcha Solver.
+ * STEP-04 - Solution received.
+ * STEP-05 - Passing the token to ${callbackName}.
+ * STEP-06 - Waiting for page acceptance.
+ */
 
 puppeteer.use(StealthPlugin());
 
 /** Solve reCAPTCHA v3 on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
+  // STEP-01: Run this workflow stage.
+
   console.log('1. Opening the reCAPTCHA v3 page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
+
+  // STEP-02: Run this workflow stage.
+
 
   console.log('2. Reading the site key and action from page scripts');
   const captcha = await page.waitForFunction((sitekey, action) => {
@@ -32,19 +46,28 @@ export async function solveCaptcha(page, solver) {
     pageAction: params.pageAction,
     minScore: Number(process.env.RECAPTCHA_MIN_SCORE || 0.3),
   });
+  // STEP-03: Run this workflow stage.
+
   console.log('3. Sending the task to Captcha Solver', task.toDict());
   const solution = await solver.solve(task);
+  // STEP-04: Run this workflow stage.
+
   console.log('4. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
   const callbackName = process.env.CALLBACK_NAME || 'verifyRecaptcha';
+  // STEP-05: Run this workflow stage.
+
   console.log(`5. Passing the token to ${callbackName}`);
   await page.evaluate((name, token) => {
     const callback = name.split('.').reduce((value, key) => value?.[key], window);
     if (typeof callback !== 'function') throw new Error(`Callback ${name} was not found.`);
     callback(token);
   }, callbackName, solution.gRecaptchaResponse);
+
+  // STEP-06: Run this workflow stage.
+
 
   console.log('6. Waiting for page acceptance');
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';

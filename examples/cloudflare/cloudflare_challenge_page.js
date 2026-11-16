@@ -1,12 +1,21 @@
-/**
- * Solve a Cloudflare managed Challenge page.
- * The Turnstile render call is intercepted before navigation so dynamic fields
- * and the original callback remain available in the browser.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+/**
+ * This example solves a Cloudflare managed Challenge without a proxy. It intercepts Turnstile before navigation, captures the site key, action, challenge data, page data, callback, and browser User-Agent, creates Tasks.TurnstileProxyless, and calls CaptchaClient.solve(). It passes the returned token to the original callback and requires a page-specific success element; callback delivery alone is not server-side acceptance.
+ *
+ * To use this example on another page, change the target URL and success selector, then verify the intercepted fields and callback. Challenge behavior and acceptance signals are site-specific.
+ *
+ * How it works:
+ * STEP-01 - Installing the Turnstile interceptor.
+ * STEP-02 - Opening the Cloudflare Challenge page.
+ * STEP-03 - Captured Challenge parameters.
+ * STEP-04 - Sending the task to Captcha Solver.
+ * STEP-05 - Solution received.
+ * STEP-06 - Passing the token to the original Turnstile callback.
+ */
 
 puppeteer.use(StealthPlugin());
 
@@ -38,8 +47,12 @@ async function installInterceptor(page) {
 /** Solve the managed Challenge on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
+  // STEP-01: Run this workflow stage.
+
   console.log('1. Installing the Turnstile interceptor');
   await installInterceptor(page);
+  // STEP-02: Run this workflow stage.
+
   console.log('2. Opening the Cloudflare Challenge page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
@@ -59,14 +72,23 @@ export async function solveCaptcha(page, solver) {
   if (state.blocked) throw new Error('Cloudflare blocked the browser before a task was created.');
   if (state.success) return `Already passed: ${state.success}`;
 
+  // STEP-03: Run this workflow stage.
+
+
   console.log('3. Captured Challenge parameters', state.params);
   const task = new Tasks.TurnstileProxyless(state.params);
+  // STEP-04: Run this workflow stage.
+
   console.log('4. Sending the task to Captcha Solver');
   const solution = await solver.solve(task);
+  // STEP-05: Run this workflow stage.
+
   console.log('5. Solution received', solution);
   if (!solution.token) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // STEP-06: Run this workflow stage.
+
   console.log('6. Passing the token to the original Turnstile callback');
   await page.evaluate((token) => {
     if (typeof window.__turnstileCallback !== 'function') throw new Error('Turnstile callback was not found.');

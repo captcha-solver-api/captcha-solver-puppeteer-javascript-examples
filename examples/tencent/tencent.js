@@ -1,12 +1,22 @@
-/**
- * Solve Tencent CAPTCHA with Puppeteer and Captcha Solver.
- * The TencentCaptcha constructor is intercepted so the task parameters and
- * original callback can be used without hardcoded values.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+/**
+ * This example solves Tencent CAPTCHA without a proxy. It intercepts the TencentCaptcha constructor before navigation, captures the app ID, script URL, and original callback, creates Tasks.TencentTaskProxyless, and calls CaptchaClient.solve(). It passes the returned multi-field solution to the callback and separately requires a configured page success element.
+ *
+ * To use this example on another page, change the target URL, trigger, and success selector and verify the constructor signature and script URL. Callback delivery proves delivery only, not server-side acceptance.
+ *
+ * How it works:
+ * STEP-01 - Installing the TencentCaptcha interceptor.
+ * STEP-02 - Opening the Tencent CAPTCHA page.
+ * STEP-03 - Opening the CAPTCHA widget.
+ * STEP-04 - Captured Tencent parameters.
+ * STEP-05 - Sending the task to Captcha Solver.
+ * STEP-06 - Solution received.
+ * STEP-07 - Passing the solution to the original Tencent callback.
+ */
 
 puppeteer.use(StealthPlugin());
 
@@ -66,12 +76,18 @@ async function installInterceptor(page) {
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
   if (!process.env.TENCENT_SUCCESS_SELECTOR) throw new Error('Set TENCENT_SUCCESS_SELECTOR.');
+  // STEP-01: Run this workflow stage.
+
   console.log('1. Installing the TencentCaptcha interceptor');
   await installInterceptor(page);
+  // STEP-02: Run this workflow stage.
+
   console.log('2. Opening the Tencent CAPTCHA page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
   if (process.env.TENCENT_TRIGGER_SELECTOR) {
+    // STEP-03: Run this workflow stage.
+
     console.log('3. Opening the CAPTCHA widget');
     await page.click(process.env.TENCENT_TRIGGER_SELECTOR);
   }
@@ -79,14 +95,22 @@ export async function solveCaptcha(page, solver) {
   const captured = await handle.jsonValue();
   await handle.dispose();
   const { id, ...taskParameters } = captured;
+  // STEP-04: Run this workflow stage.
+
   console.log('4. Captured Tencent parameters', taskParameters);
 
   const task = new Tasks.TencentTaskProxyless(taskParameters);
+  // STEP-05: Run this workflow stage.
+
   console.log('5. Sending the task to Captcha Solver');
   const solution = await solver.solve(task);
+  // STEP-06: Run this workflow stage.
+
   console.log('6. Solution received', solution);
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // STEP-07: Run this workflow stage.
+
   console.log('7. Passing the solution to the original Tencent callback');
   await page.evaluate((recordId, answer) => {
     window.__captchaSolverTencent.submit(recordId, answer);

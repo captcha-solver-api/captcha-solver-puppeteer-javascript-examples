@@ -1,12 +1,21 @@
-/**
- * Solve reCAPTCHA v3 when execute() is called from an external script.
- * An interceptor records the site key and action before navigation, then this
- * example solves the task and resolves the intercepted execute() promise.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+/**
+ * This example solves reCAPTCHA v3 when execute() is called from an external script. It installs an interceptor before navigation, captures the site key and action, creates Tasks.RecaptchaV3Proxyless, and calls CaptchaClient.solve(). It resolves the intercepted Promise with gRecaptchaResponse and separately requires a page-specific success element.
+ *
+ * To use this example on another page, change the target URL and verify the intercepted API, trigger, action, score, and acceptance signal. Promise resolution alone does not prove server-side acceptance.
+ *
+ * How it works:
+ * STEP-01 - Installing the execute() interceptor.
+ * STEP-02 - Opening the reCAPTCHA v3 page.
+ * STEP-03 - Captured reCAPTCHA parameters.
+ * STEP-04 - Sending the task to Captcha Solver.
+ * STEP-05 - Solution received.
+ * STEP-06 - Resolving the intercepted execute() promise.
+ */
 
 puppeteer.use(StealthPlugin());
 
@@ -37,8 +46,12 @@ async function installInterceptor(page) {
 /** Solve intercepted reCAPTCHA v3 on an already opened page. */
 export async function solveCaptcha(page, solver) {
   if (!process.env.TARGET_URL) throw new Error('Set TARGET_URL for this example.');
+  // STEP-01: Run this workflow stage.
+
   console.log('1. Installing the execute() interceptor');
   await installInterceptor(page);
+  // STEP-02: Run this workflow stage.
+
   console.log('2. Opening the reCAPTCHA v3 page');
   await page.goto(process.env.TARGET_URL, { waitUntil: 'domcontentloaded' });
 
@@ -48,18 +61,26 @@ export async function solveCaptcha(page, solver) {
   const handle = await page.waitForFunction(() => window.__recaptchaV3 || false);
   const params = await handle.jsonValue();
   await handle.dispose();
+  // STEP-03: Run this workflow stage.
+
   console.log('3. Captured reCAPTCHA parameters', params);
 
   const task = new Tasks.RecaptchaV3Proxyless({
     websiteURL: page.url(), ...params,
     minScore: Number(process.env.RECAPTCHA_MIN_SCORE || 0.3),
   });
+  // STEP-04: Run this workflow stage.
+
   console.log('4. Sending the task to Captcha Solver');
   const solution = await solver.solve(task);
+  // STEP-05: Run this workflow stage.
+
   console.log('5. Solution received', solution);
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // STEP-06: Run this workflow stage.
+
   console.log('6. Resolving the intercepted execute() promise');
   await page.evaluate((token) => window.__resolveRecaptchaV3(token), solution.gRecaptchaResponse);
   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
