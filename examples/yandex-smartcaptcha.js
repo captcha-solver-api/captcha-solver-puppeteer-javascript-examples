@@ -46,7 +46,7 @@ let browser;
 export function solveCaptcha(page, solver = client) {
   let solution;
 
-  // STEP-02: Launch Chromium and open the target page.
+  // Open the configured target page after main() launches Chromium.
   return (
     page
       .goto(process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || websiteURL, {

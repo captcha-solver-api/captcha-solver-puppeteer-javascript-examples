@@ -28,9 +28,13 @@ for await (const path of javascriptFiles('examples')) {
   const described = [...source.matchAll(/STEP-(?<number>\d{2}) -/g)].map(
     (match) => match.groups.number,
   );
-  const implemented = new Set(
-    [...source.matchAll(/\/\/ STEP-(?<number>\d{2}):/g)].map((match) => match.groups.number),
+  const implementedList = [...source.matchAll(/\/\/ STEP-(?<number>\d{2}):/g)].map(
+    (match) => match.groups.number,
   );
+  const implemented = new Set(implementedList);
+  if (implemented.size !== implementedList.length) {
+    throw new Error(`${path} implements at least one STEP more than once.`);
+  }
   described.forEach((number, index) => {
     const expected = String(index + 1).padStart(2, '0');
     if (number !== expected || !implemented.has(number)) {

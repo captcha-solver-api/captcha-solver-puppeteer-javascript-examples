@@ -14,13 +14,12 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-03 - Sending ImageToText task with recognition hints.
  * STEP-04 - Recognized text.
  * STEP-05 - Typing the answer and submitting the form.
+ * STEP-06 - Waiting for page acceptance.
  */
 
 /** Run the complete standalone screenshot-with-parameters example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -112,6 +111,7 @@ export const solveCaptcha = function (page, solver) {
                     process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]',
                   ),
                 ).then(function () {
+                  // STEP-06: Waiting for page acceptance.
                   const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
                   return Promise.resolve(
                     page.waitForSelector(selector, {

@@ -15,13 +15,12 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-04 - Sending the task to Captcha Solver.
  * STEP-05 - Solution received.
  * STEP-06 - Resolving the intercepted execute() promise.
+ * STEP-07 - Waiting for page acceptance.
  */
 
 /** Run the complete standalone intercepted reCAPTCHA v3 example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -81,9 +80,7 @@ export const solveCaptcha = function (page, solver) {
       ).then(function () {
         return Promise.resolve(page.evaluate(() => Boolean(window.__recaptchaV3))).then(
           function (_page$evaluate) {
-            /**
-             *
-             */
+            /** Wait for intercepted execute() parameters and solve the captured challenge. */
             function _temp2() {
               return Promise.resolve(
                 page.waitForFunction(() => window.__recaptchaV3 || false),
@@ -114,6 +111,7 @@ export const solveCaptcha = function (page, solver) {
                           solution.gRecaptchaResponse,
                         ),
                       ).then(function () {
+                        // STEP-07: Waiting for page acceptance.
                         const selector =
                           process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
                         return Promise.resolve(

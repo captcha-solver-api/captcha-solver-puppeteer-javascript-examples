@@ -20,9 +20,7 @@ import { demos } from '../config/demos.js';
 
 /** Run the complete standalone proxy example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -50,9 +48,7 @@ export const main = function () {
       const _temp3 = _finallyRethrows(
         function () {
           return Promise.resolve(browser.newPage()).then(function (page) {
-            /**
-             *
-             */
+            /** Authenticate the browser proxy when credentials were configured, then solve. */
             function _temp2() {
               return Promise.resolve(solveCaptcha(page, solver, proxy)).then(
                 function (_solveCaptcha) {

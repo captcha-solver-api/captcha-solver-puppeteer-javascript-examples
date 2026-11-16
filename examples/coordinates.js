@@ -23,9 +23,7 @@ const _iteratorSymbol =
   /*#__PURE__*/ typeof Symbol !== 'undefined'
     ? Symbol.iterator || (Symbol.iterator = Symbol('Symbol.iterator'))
     : '@@iterator';
-/**
- *
- */
+/** Settle the lightweight Promise used while iterating over asynchronous click operations. */
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -52,9 +50,7 @@ function _settle(pact, state, value) {
   }
 }
 const _Pact = /*#__PURE__*/ (function () {
-  /**
-   *
-   */
+  /** Create a lightweight thenable for the generated iteration flow. */
   function _Pact() {}
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     const result = new _Pact();
@@ -90,22 +86,16 @@ const _Pact = /*#__PURE__*/ (function () {
   };
   return _Pact;
 })();
-/**
- *
- */
+/** Return whether a lightweight iteration Promise has already fulfilled. */
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-/**
- *
- */
+/** Iterate over array indexes while preserving asynchronous results. */
 function _forTo(array, body, check) {
   var i = -1,
     pact,
     reject;
-  /**
-   *
-   */
+  /** Continue the indexed loop after the previous asynchronous operation settles. */
   function _cycle(result) {
     try {
       while (++i < array.length && (!check || !check())) {
@@ -131,18 +121,14 @@ function _forTo(array, body, check) {
   _cycle();
   return pact;
 }
-/**
- *
- */
+/** Iterate over values while preserving asynchronous results and iterator cleanup. */
 function _forOf(target, body, check) {
   if (typeof target[_iteratorSymbol] === 'function') {
     var iterator = target[_iteratorSymbol](),
       step,
       pact,
       reject;
-    /**
-     *
-     */
+    /** Continue the iterator after the previous asynchronous operation settles. */
     function _cycle(result) {
       try {
         while (!(step = iterator.next()).done && (!check || !check())) {
@@ -203,9 +189,7 @@ function _forOf(target, body, check) {
     check,
   );
 }
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -295,9 +279,7 @@ export const solveCaptcha = function (page, solver) {
               throw new Error('Captcha Solver returned no coordinates.');
             return Promise.resolve(imageElement.scrollIntoView()).then(function () {
               return Promise.resolve(imageElement.boundingBox()).then(function (box) {
-                /**
-                 *
-                 */
+                /** Submit the clicked coordinates and read the page acceptance message. */
                 function _temp2() {
                   // STEP-06: Submitting and waiting for page acceptance.
                   console.log('6. Submitting and waiting for page acceptance');

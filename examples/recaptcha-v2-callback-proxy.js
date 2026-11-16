@@ -14,13 +14,12 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-03 - Sending the task to Captcha Solver.
  * STEP-04 - Solution received.
  * STEP-05 - Calling ${captcha.callbackName}.
+ * STEP-06 - Waiting for page acceptance.
  */
 
 /** Run the complete standalone proxy callback example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -48,9 +47,7 @@ export const main = function () {
       const _temp3 = _finallyRethrows(
         function () {
           return Promise.resolve(browser.newPage()).then(function (page) {
-            /**
-             *
-             */
+            /** Authenticate the browser proxy when credentials were configured, then solve. */
             function _temp2() {
               return Promise.resolve(solveCaptcha(page, solver, proxy)).then(
                 function (_solveCaptcha) {
@@ -142,6 +139,7 @@ export const solveCaptcha = function (page, solver, proxy) {
                       solution.gRecaptchaResponse,
                     ),
                   ).then(function () {
+                    // STEP-06: Waiting for page acceptance.
                     const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
                     return Promise.resolve(
                       page.waitForSelector(selector, {

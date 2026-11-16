@@ -20,9 +20,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 /** Run the complete standalone Cloudflare Challenge example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();

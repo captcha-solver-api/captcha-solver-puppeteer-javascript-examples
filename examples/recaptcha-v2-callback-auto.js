@@ -14,13 +14,12 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-03 - Sending the task to Captcha Solver.
  * STEP-04 - Solution received.
  * STEP-05 - Passing the token to the discovered callback.
+ * STEP-06 - Waiting for page acceptance.
  */
 
 /** Run the complete standalone callback-discovery example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -104,6 +103,7 @@ export const solveCaptcha = function (page, solver) {
                   solution.gRecaptchaResponse,
                 ),
               ).then(function () {
+                // STEP-06: Waiting for page acceptance.
                 const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
                 return Promise.resolve(
                   page.waitForSelector(selector, {

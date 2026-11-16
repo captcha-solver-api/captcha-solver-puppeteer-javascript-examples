@@ -16,13 +16,12 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * STEP-05 - Sending the task to Captcha Solver.
  * STEP-06 - Solution received.
  * STEP-07 - Passing the solution to the original Tencent callback.
+ * STEP-08 - Waiting for page acceptance.
  */
 
 /** Run the complete standalone Tencent CAPTCHA example. */
 
-/**
- *
- */
+/** Run cleanup after a synchronous or Promise-returning operation and preserve failures. */
 function _finallyRethrows(body, finalizer) {
   try {
     var result = body();
@@ -81,9 +80,7 @@ export const solveCaptcha = function (page, solver) {
           waitUntil: 'domcontentloaded',
         }),
       ).then(function () {
-        /**
-         *
-         */
+        /** Wait for captured constructor parameters, solve the task, and invoke its callback. */
         function _temp2() {
           return Promise.resolve(
             page.waitForFunction(() => window.__captchaSolverTencent.pending()[0] || false),
@@ -112,6 +109,7 @@ export const solveCaptcha = function (page, solver) {
                       solution,
                     ),
                   ).then(function () {
+                    // STEP-08: Waiting for page acceptance.
                     return Promise.resolve(
                       page.waitForSelector(process.env.TENCENT_SUCCESS_SELECTOR, {
                         visible: true,
