@@ -113,7 +113,8 @@ export async function solveCaptcha(page, solver) {
 
   console.log('6. Solution received', solution);
 
-  // Token injection and submission are site-specific; adapt this step to the target page.
+  // Solution submission is site-specific; adapt this step to the target page.
+  // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
   // STEP-07: Passing the solution to the original Tencent callback.
 
   console.log('7. Passing the solution to the original Tencent callback');

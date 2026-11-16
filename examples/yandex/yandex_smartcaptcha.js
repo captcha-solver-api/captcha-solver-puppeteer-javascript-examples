@@ -74,6 +74,7 @@ export function solveCaptcha(page, solver = client) {
         solution = result;
         console.log('Solution:', solution);
         // Token injection and submission are site-specific; adapt this step to the target page.
+        // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
         return page.$eval(
           tokenSelector,
           (input, token) => {

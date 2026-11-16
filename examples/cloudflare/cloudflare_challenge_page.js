@@ -97,6 +97,7 @@ export async function solveCaptcha(page, solver) {
   if (!solution.token) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
   // STEP-06: Passing the token to the original Turnstile callback.
 
   console.log('6. Passing the token to the original Turnstile callback');

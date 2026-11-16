@@ -71,6 +71,7 @@ export async function solveCaptcha(page, solver, proxy) {
   if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
   // STEP-05: Writing the token and submitting the form.
 
   console.log('5. Writing the token and submitting the form');

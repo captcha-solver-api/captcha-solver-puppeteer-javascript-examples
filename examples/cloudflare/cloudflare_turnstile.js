@@ -52,6 +52,7 @@ export async function solveCaptcha(page, solver) {
   if (!solution.token) throw new Error('Captcha Solver returned an empty token.');
 
   // Token injection and submission are site-specific; adapt this step to the target page.
+  // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
   // STEP-05: Writing the token into cf-turnstile-response.
 
   console.log('5. Writing the token into cf-turnstile-response');
