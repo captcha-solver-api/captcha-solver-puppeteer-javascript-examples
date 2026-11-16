@@ -87,8 +87,6 @@ export const solveCaptcha = function (page, solver) {
               ).then(function (handle) {
                 return Promise.resolve(handle.jsonValue()).then(function (params) {
                   return Promise.resolve(handle.dispose()).then(function () {
-                    // Token injection and submission are site-specific; adapt this step to the target page.
-                    // Inspect the target page's intercepted flow and acceptance signals before adapting it.
                     // STEP-03: Captured reCAPTCHA parameters.
                     console.log('3. Captured reCAPTCHA parameters', params);
                     const task = new Tasks.RecaptchaV3Proxyless({
@@ -103,6 +101,8 @@ export const solveCaptcha = function (page, solver) {
                       console.log('5. Solution received', solution);
                       if (!solution.gRecaptchaResponse)
                         throw new Error('Captcha Solver returned an empty token.');
+                      // Token injection and submission are site-specific; adapt this step to the target page.
+                      // Inspect the target page's intercepted flow and acceptance signals before adapting it.
                       // STEP-06: Resolving the intercepted execute() promise.
                       console.log('6. Resolving the intercepted execute() promise');
                       return Promise.resolve(

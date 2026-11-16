@@ -277,6 +277,8 @@ export const solveCaptcha = function (page, solver) {
             console.log('4. Coordinates received', solution.coordinates);
             if (!solution.coordinates?.length)
               throw new Error('Captcha Solver returned no coordinates.');
+            // Coordinate clicks and submission are site-specific; adapt this step to the target page.
+            // Inspect the target image's scaling, click flow, submission, and acceptance signals before adapting it.
             return Promise.resolve(imageElement.scrollIntoView()).then(function () {
               return Promise.resolve(imageElement.boundingBox()).then(function (box) {
                 /** Submit the clicked coordinates and read the page acceptance message. */

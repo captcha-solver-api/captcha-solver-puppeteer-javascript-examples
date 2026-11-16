@@ -93,8 +93,6 @@ export const solveCaptcha = function (page, solver, proxy) {
     ).then(function () {
       return Promise.resolve(page.waitForSelector('[data-sitekey][data-callback]')).then(
         function () {
-          // Token injection and submission are site-specific; adapt this step to the target page.
-          // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
           // STEP-02: Reading CAPTCHA parameters and callback name.
           console.log('2. Reading CAPTCHA parameters and callback name');
           return Promise.resolve(
@@ -123,6 +121,8 @@ export const solveCaptcha = function (page, solver, proxy) {
                   console.log('4. Solution received', solution);
                   if (!solution.gRecaptchaResponse)
                     throw new Error('Captcha Solver returned an empty token.');
+                  // Token injection and submission are site-specific; adapt this step to the target page.
+                  // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
                   // STEP-05: Calling ${captcha.callbackName}.
                   console.log(`5. Calling ${captcha.callbackName}`);
                   return Promise.resolve(

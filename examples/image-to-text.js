@@ -99,6 +99,8 @@ export const solveCaptcha = function (page, solver) {
             // STEP-04: Recognized text.
             console.log('4. Recognized text:', solution.text);
             if (!solution.text) throw new Error('Captcha Solver returned empty text.');
+            // Answer entry and submission are site-specific; adapt this step to the target page.
+            // Inspect the target page's answer field, submission flow, and acceptance signals before adapting it.
             // STEP-05: Typing the answer and submitting the form.
             console.log('5. Typing the answer and submitting the form');
             return Promise.resolve(page.locator(ANSWER_SELECTOR).fill(solution.text)).then(

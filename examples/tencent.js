@@ -88,8 +88,6 @@ export const solveCaptcha = function (page, solver) {
             return Promise.resolve(handle.jsonValue()).then(function (captured) {
               return Promise.resolve(handle.dispose()).then(function () {
                 const { id, ...taskParameters } = captured;
-                // Solution submission is site-specific; adapt this step to the target page.
-                // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
                 // STEP-04: Captured Tencent parameters.
                 console.log('4. Captured Tencent parameters', taskParameters);
                 const task = new Tasks.TencentTaskProxyless(taskParameters);
@@ -98,6 +96,8 @@ export const solveCaptcha = function (page, solver) {
                 return Promise.resolve(solver.solve(task)).then(function (solution) {
                   // STEP-06: Solution received.
                   console.log('6. Solution received', solution);
+                  // Solution submission is site-specific; adapt this step to the target page.
+                  // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
                   // STEP-07: Passing the solution to the original Tencent callback.
                   console.log('7. Passing the solution to the original Tencent callback');
                   return Promise.resolve(

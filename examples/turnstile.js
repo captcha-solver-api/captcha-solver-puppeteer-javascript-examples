@@ -75,8 +75,6 @@ export const solveCaptcha = function (page, solver) {
       }),
     ).then(function () {
       return Promise.resolve(page.waitForSelector('.cf-turnstile[data-sitekey]')).then(function () {
-        // Token injection and submission are site-specific; adapt this step to the target page.
-        // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
         // STEP-02: Reading Turnstile widget parameters.
         console.log('2. Reading Turnstile widget parameters');
         return Promise.resolve(
@@ -100,6 +98,8 @@ export const solveCaptcha = function (page, solver) {
                 // STEP-04: Solution received.
                 console.log('4. Solution received', solution);
                 if (!solution.token) throw new Error('Captcha Solver returned an empty token.');
+                // Token injection and submission are site-specific; adapt this step to the target page.
+                // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
                 // STEP-05: Writing the token into cf-turnstile-response.
                 console.log('5. Writing the token into cf-turnstile-response');
                 return Promise.resolve(

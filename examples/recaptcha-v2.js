@@ -86,8 +86,6 @@ export const solveCaptcha = function (page, solver) {
       }),
     ).then(function () {
       return Promise.resolve(page.waitForSelector('[data-sitekey]')).then(function () {
-        // Token injection and submission are site-specific; adapt this step to the target page.
-        // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
         // STEP-02: Reading reCAPTCHA parameters from the page.
         console.log('2. Reading reCAPTCHA parameters from the page');
         return Promise.resolve(
@@ -113,6 +111,8 @@ export const solveCaptcha = function (page, solver) {
                 if (!solution.gRecaptchaResponse) {
                   throw new Error('Captcha Solver returned an empty reCAPTCHA token.');
                 }
+                // Token injection and submission are site-specific; adapt this step to the target page.
+                // Inspect the target page's fields, submission flow, and acceptance signals before adapting it.
                 // STEP-05: Writing the token into g-recaptcha-response.
                 console.log('5. Writing the token into g-recaptcha-response');
                 return Promise.resolve(

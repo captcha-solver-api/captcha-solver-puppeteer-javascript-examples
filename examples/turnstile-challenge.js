@@ -117,8 +117,6 @@ export const solveCaptcha = function (page, solver) {
                     const previousClearance = _page$cookies.find(
                       (cookie) => cookie.name === 'cf_clearance',
                     )?.value;
-                    // Token injection and submission are site-specific; adapt this step to the target page.
-                    // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
                     // STEP-03: Captured Challenge parameters.
                     console.log('3. Captured Challenge parameters', state.params);
                     const task = new Tasks.TurnstileProxyless(state.params);
@@ -129,6 +127,8 @@ export const solveCaptcha = function (page, solver) {
                       console.log('5. Solution received', solution);
                       if (!solution.token)
                         throw new Error('Captcha Solver returned an empty token.');
+                      // Token injection and submission are site-specific; adapt this step to the target page.
+                      // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
                       // STEP-06: Passing the token to the original Turnstile callback.
                       console.log('6. Passing the token to the original Turnstile callback');
                       return Promise.resolve(

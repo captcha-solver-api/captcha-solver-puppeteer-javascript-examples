@@ -48,6 +48,7 @@ export function solveCaptcha(page, solver) {
         // STEP-04: Log and submit the complete v4 solution to this demo endpoint.
         console.log('4. Solution received', solution);
         // Solution submission is site-specific; adapt this step to the target page.
+        // Inspect the target page's verification endpoint, required fields, and acceptance response before adapting it.
         return page.evaluate((result) => {
           return fetch('/api/v1/captcha-demo/gee-test-v4/verify', {
             method: 'POST',

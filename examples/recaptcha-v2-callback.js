@@ -75,8 +75,6 @@ export const solveCaptcha = function (page, solver) {
       }),
     ).then(function () {
       return Promise.resolve(page.waitForSelector('[data-sitekey]')).then(function () {
-        // Token injection and submission are site-specific; adapt this step to the target page.
-        // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
         // STEP-02: Reading reCAPTCHA parameters.
         console.log('2. Reading reCAPTCHA parameters');
         return Promise.resolve(
@@ -101,6 +99,8 @@ export const solveCaptcha = function (page, solver) {
                 if (!solution.gRecaptchaResponse)
                   throw new Error('Captcha Solver returned an empty token.');
                 const callbackName = process.env.CALLBACK_NAME || 'verifyDemoRecaptcha';
+                // Token injection and submission are site-specific; adapt this step to the target page.
+                // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
                 // STEP-05: Calling ${callbackName} with the returned token.
                 console.log(`5. Calling ${callbackName} with the returned token`);
                 return Promise.resolve(

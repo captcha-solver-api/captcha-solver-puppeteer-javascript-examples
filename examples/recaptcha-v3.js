@@ -108,8 +108,6 @@ export const solveCaptcha = function (page, solver) {
               pageAction: params.pageAction,
               minScore: Number(process.env.RECAPTCHA_MIN_SCORE || 0.3),
             });
-            // Token injection and submission are site-specific; adapt this step to the target page.
-            // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
             // STEP-03: Sending the task to Captcha Solver.
             console.log('3. Sending the task to Captcha Solver', task.toDict());
             return Promise.resolve(solver.solve(task)).then(function (solution) {
@@ -118,6 +116,8 @@ export const solveCaptcha = function (page, solver) {
               if (!solution.gRecaptchaResponse)
                 throw new Error('Captcha Solver returned an empty token.');
               const callbackName = process.env.CALLBACK_NAME || 'verifyRecaptcha';
+              // Token injection and submission are site-specific; adapt this step to the target page.
+              // Inspect the target page's callback, submission flow, and acceptance signals before adapting it.
               // STEP-05: Passing the token to ${callbackName}.
               console.log(`5. Passing the token to ${callbackName}`);
               return Promise.resolve(
