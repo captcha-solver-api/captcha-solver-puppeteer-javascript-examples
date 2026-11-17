@@ -176,7 +176,12 @@ after(async () => {
 
 /** Run an example flow against the local page and API fixtures. */
 async function run(path, solveCaptcha, ...options) {
-  process.env.TARGET_URL = baseUrl + path;
+  const targetURL = baseUrl + path;
+  process.env.RECAPTCHA_V2_TARGET_URL = targetURL;
+  process.env.RECAPTCHA_V3_TARGET_URL = targetURL;
+  process.env.TURNSTILE_TARGET_URL = targetURL;
+  process.env.TURNSTILE_CHALLENGE_TARGET_URL = targetURL;
+  process.env.TENCENT_TARGET_URL = targetURL;
   submitted = null;
   const page = await browser.newPage();
   page.setDefaultTimeout(3000);

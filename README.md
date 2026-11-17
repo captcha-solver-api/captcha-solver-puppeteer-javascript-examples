@@ -102,14 +102,13 @@ repeated so that an example can be copied without also copying hidden project he
 | Coordinates             | [`coordinates.js`](examples/coordinates.js)                             | `npm run coordinates`             |
 | Balance                 | [`balance.js`](examples/balance.js)                                     | `npm run balance`                 |
 
-The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
-by default. Set `TARGET_URL` to override the reCAPTCHA target and
-`YANDEX_SMARTCAPTCHA_TARGET_URL` to override the Yandex target. Enterprise and
-GeeTest examples use `RECAPTCHA_ENTERPRISE_TARGET_URL`, `GEETEST_V3_TARGET_URL`,
-and `GEETEST_V4_TARGET_URL`. The remaining browser examples require `TARGET_URL`
-in `.env` for a page you are authorized to test. Changing a URL does not
-automatically adapt selectors, callbacks, submission, or acceptance checks to a
-different page.
+The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos by default. Other
+browser examples use the matching `*_TARGET_URL` variable from `.env.example`, such as
+`RECAPTCHA_V3_TARGET_URL`, `TURNSTILE_TARGET_URL`, `TURNSTILE_CHALLENGE_TARGET_URL`, and
+`TENCENT_TARGET_URL`. The `example.com/page_with_...` values are placeholders, not working CAPTCHA
+demos. Replace them with pages you own or are authorized to test. For Tencent, set
+`TENCENT_SCRIPT_URL` if the script URL cannot be captured from the page. Changing a URL does not
+automatically adapt selectors, callbacks, submission, or acceptance checks to a different page.
 
 > [!IMPORTANT]
 > CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and
@@ -142,4 +141,4 @@ local browser regression suite. These checks use local fixtures and do not creat
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/captcha-solver-api/tencent-captcha-puppeteer-demo/blob/main/LICENSE).
+This project is licensed under the [MIT License](LICENSE.md).

@@ -1,6 +1,6 @@
 # Test status
 
-Automated checks validated on November 16, 2026 with Node.js 22.12, Node.js 24, and Chrome 155.
+Automated checks validated on November 17, 2026 with Node.js 22.12, Node.js 24, and Chrome 155.
 
 ## Automated checks
 
