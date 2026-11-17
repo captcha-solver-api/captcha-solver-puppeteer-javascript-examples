@@ -43,12 +43,11 @@ export function solveCaptcha(page, solver) {
         websiteKey,
         isInvisible: false,
       });
-      console.log('3. Sending Enterprise task', task.toDict());
       return solver.solve(task);
     })
     .then((solution) => {
       // STEP-04: Log and inject the token into this page's response field.
-      console.log('4. Solution received', solution);
+      console.log('Solution:', solution);
       if (!solution.gRecaptchaResponse) throw new Error('Solver returned an empty token.');
       // Token injection and submission are site-specific; adapt this step to the target page.
       // Inspect the target page's fields, enterprise payload, submission flow, and acceptance signals before adapting it.
@@ -88,7 +87,7 @@ export function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   // STEP-06: Report failures and always close Chromium in main().
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }

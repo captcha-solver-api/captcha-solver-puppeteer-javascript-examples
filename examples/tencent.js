@@ -184,7 +184,7 @@ export function main() {
         return browser.newPage();
       })
       .then((page) => solveCaptcha(page))
-      .then((message) => console.log(`Callback confirmation: ${message}`))
+      .then((message) => console.log(`Page confirmation: ${message}`))
       // STEP-08: Always close Chromium and let callers handle failures.
       .finally(() => browser?.close())
   );
@@ -193,7 +193,7 @@ export function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   // Report errors and set a nonzero exit code when this file runs directly.
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }

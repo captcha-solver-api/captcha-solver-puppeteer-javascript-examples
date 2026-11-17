@@ -74,10 +74,7 @@ for await (const path of javascriptFiles('examples')) {
     ) {
       throw new Error(`${path} must explain its site-specific solution application.`);
     }
-    const hasExpectedConfirmation = path.endsWith('/tencent.js')
-      ? source.includes('Callback confirmation:')
-      : source.includes('Page confirmation:');
-    if (!hasExpectedConfirmation) {
+    if (!source.includes('Page confirmation:')) {
       throw new Error(
         `${path} must log its acceptance boundary separately from the solver result.`,
       );

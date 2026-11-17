@@ -44,12 +44,11 @@ export function solveCaptcha(page, solver) {
           version: 4,
           initParameters: { captcha_id: captchaId },
         });
-        console.log('3. Sending GeeTest v4 task', task.toDict());
         return solver.solve(task);
       })
       .then((solution) => {
         // STEP-04: Log and submit the complete v4 solution to this demo endpoint.
-        console.log('4. Solution received', solution);
+        console.log('Solution:', solution);
         // Solution submission is site-specific; adapt this step to the target page.
         // Inspect the target page's verification endpoint, required fields, and acceptance response before adapting it.
         return page.evaluate((result) => {
@@ -92,7 +91,7 @@ export function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   // STEP-06: Report errors; main() closes Chromium in every outcome.
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }

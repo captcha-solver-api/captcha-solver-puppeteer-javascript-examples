@@ -45,7 +45,7 @@ export function main() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }

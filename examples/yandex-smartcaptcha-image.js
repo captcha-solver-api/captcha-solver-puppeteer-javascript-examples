@@ -42,19 +42,18 @@ export function main(solver) {
         imgInstructions: instructions.toString('base64'),
         comment: 'Select objects in the order shown in the instruction image',
       });
-      console.log('3. Sending SmartCaptchaTask with challenge and instruction images');
       return client.solve(task);
     })
     .then((solution) => {
       // STEP-04: Print coordinates; applying them in a widget is unique to each target site.
-      console.log('Coordinates:', solution.coordinates);
+      console.log(solution.coordinates);
       return solution;
     });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }

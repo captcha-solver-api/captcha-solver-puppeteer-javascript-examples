@@ -106,8 +106,6 @@ export function solveCaptcha(page, solver = client) {
 /** Run the complete standalone Yandex SmartCaptcha example. */
 export function main() {
   // STEP-01: Configure the target and create the SDK client.
-  console.log('Target:', process.env.YANDEX_TARGET_URL || websiteURL);
-
   // STEP-02: Launch Chromium and open the target page.
   return (
     puppeteer
@@ -128,7 +126,7 @@ export function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   // Report errors and set a nonzero exit code when this file runs directly.
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }
