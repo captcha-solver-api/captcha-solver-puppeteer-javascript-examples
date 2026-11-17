@@ -82,6 +82,10 @@ target page accepted the result. Image and balance examples print their applicab
 without inventing a browser acceptance step. Image bodies are never printed, and API keys must
 remain in `.env`.
 
+Tencent confirms that the intercepted page callback received the same ticket and random string.
+This proves callback delivery, not server-side acceptance; add a target-specific acceptance check
+when the page exposes one.
+
 Every example is intentionally self-contained and written as a linear tutorial. Browser examples
 show SDK and browser setup, page navigation, parameter collection, task creation, `solver.solve()`,
 solution application, form submission, and acceptance checks in one file. Image-only, coordinate,

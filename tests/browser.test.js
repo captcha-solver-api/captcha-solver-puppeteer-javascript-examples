@@ -79,11 +79,11 @@ const fixtures = {
     document.querySelector('button').onclick = () => {
       if (Math.abs(window.clicked?.[0] - 50) < 2 && Math.abs(window.clicked?.[1] - 25) < 2) accept();
     };</script>`,
-  '/tencent': `<button id="open-tencent">Verify</button><script src="/TCaptcha-global.js"></script><script>
+  '/tencent': `<script src="/TCaptcha-global.js"></script><script>
     window.TencentCaptcha = class { constructor(appId, callback) { this.callback = callback; } show() {} };
-    document.querySelector('#open-tencent').onclick = () => new TencentCaptcha('fixture-app-id', answer => {
+    setTimeout(() => new TencentCaptcha('fixture-app-id', answer => {
       if (answer.appid === 'fixture-app-id' && answer.ret === 0 && answer.ticket === 'fixture-ticket' && answer.randstr === 'fixture-randstr') accept();
-    }).show();
+    }).show(), 25);
     </script>`,
   '/yandex': `<div class="smart-captcha" data-sitekey="fixture-key"></div>
     <input name="smart-token" type="hidden"><button id="smartcaptcha-demo-submit">Submit</button>
@@ -107,8 +107,6 @@ const fixtures = {
 };
 
 before(async () => {
-  delete process.env.TENCENT_TRIGGER_SELECTOR;
-  delete process.env.TENCENT_SUCCESS_SELECTOR;
   server = createServer(async (req, res) => {
     if (req.method === 'GET' && req.url === '/TCaptcha-global.js') {
       res.setHeader('Content-Type', 'text/javascript');
@@ -207,7 +205,7 @@ async function run(path, solveCaptcha, ...options) {
   });
   try {
     const message = await solveCaptcha(page, solver, ...options);
-    assert.match(message, /Demo accepted|Hello, user!/);
+    assert.match(message, /Demo accepted|Hello, user!|Tencent callback received/);
     if (submitted) assert.match(receivedHeader, /^javascript-sdk\//);
     return {
       task: submitted,
@@ -255,8 +253,6 @@ test('Challenge rejects a failed navigation response', async () => {
   await assert.rejects(run('/challenge-http-error', challenge), /HTTP 403/);
 });
 test('Tencent interception sends captured fields and invokes the original callback', async () => {
-  process.env.TENCENT_TRIGGER_SELECTOR = '#open-tencent';
-  process.env.TENCENT_SUCCESS_SELECTOR = 'p[class*="successMessage"]';
   const { task } = await run('/tencent', tencent);
   assert.equal(task.type, 'TencentTaskProxyless');
   assert.equal(task.appId, 'fixture-app-id');

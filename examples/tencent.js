@@ -6,21 +6,21 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 /**
  * This example shows how to solve Tencent CAPTCHA without using a proxy. It intercepts the
  * TencentCaptcha constructor, captures the app ID, script URL, and callback, sends the task to the
- * service, passes the returned solution to the original callback, and checks a page-specific
- * confirmation. It uses Tasks.TencentTaskProxyless and CaptchaClient.solve().
+ * service, passes the returned solution to the original callback, and confirms callback delivery.
+ * It uses Tasks.TencentTaskProxyless and CaptchaClient.solve().
  *
- * To use this example on another page, change the target URL, optional script URL, trigger, and
- * success selector. Constructor signatures, callbacks, submission, and acceptance indicators are
- * site-specific, so inspect and debug the page before adapting the solution application step.
+ * To use this example on another page, change the target URL and optional script URL, then verify
+ * its constructor signature and callback. Callback delivery is site-specific and does not prove
+ * server-side acceptance, so add a separate page-specific acceptance check when one is available.
  *
  * How it works:
  * STEP-01 - Configure the target and create the SDK client.
  * STEP-02 - Launch Chromium and install the constructor interceptor.
- * STEP-03 - Open the target and trigger the CAPTCHA widget.
+ * STEP-03 - Open the target and wait for the CAPTCHA widget.
  * STEP-04 - Capture the Tencent task parameters.
  * STEP-05 - Create the task and wait for the solver result.
  * STEP-06 - Log the solution and pass it to the original callback.
- * STEP-07 - Verify that the page accepts the solution.
+ * STEP-07 - Confirm that the callback receives the solution.
  * STEP-08 - Handle errors and close Chromium.
  */
 
@@ -53,6 +53,14 @@ function installInterceptor(page) {
           if (!record || record.submitted) throw new Error('Tencent callback was not found.');
           record.submitted = true;
           record.callback(solution);
+          record.receivedSolution = solution;
+        },
+        received(recordId, solution) {
+          const receivedSolution = records.get(recordId)?.receivedSolution;
+          return (
+            receivedSolution?.ticket === solution.ticket &&
+            receivedSolution?.randstr === solution.randstr
+          );
         },
       },
     });
@@ -84,7 +92,12 @@ function installInterceptor(page) {
             nativeArguments[callbackArgumentIndex] = () => {};
             const instance = Reflect.construct(Target, nativeArguments, newTarget);
             instance.show = () => {};
-            records.set(recordId, { params, callback, submitted: false });
+            records.set(recordId, {
+              params,
+              callback,
+              submitted: false,
+              receivedSolution: null,
+            });
             return instance;
           },
         });
@@ -97,21 +110,16 @@ function installInterceptor(page) {
  * Solve Tencent CAPTCHA on an opened Puppeteer page.
  * @param {import('puppeteer').Page} page Open Puppeteer page.
  * @param {CaptchaClient} solver Configured Captcha Solver client.
- * @returns {Promise<string>} Page text that confirms acceptance.
+ * @returns {Promise<string>} Message confirming delivery to the page callback.
  */
 export function solveCaptcha(page, solver = client) {
-  const triggerSelector = process.env.TENCENT_TRIGGER_SELECTOR;
-  const successSelector = process.env.TENCENT_SUCCESS_SELECTOR;
-  if (!successSelector) throw new Error('Set TENCENT_SUCCESS_SELECTOR for this example.');
-
   // STEP-02: Install the interceptor before the target defines TencentCaptcha.
   return (
     installInterceptor(page)
-      // STEP-03: Open the target and trigger its CAPTCHA widget when required.
+      // STEP-03: Open the target; this flow expects the page to create its CAPTCHA widget.
       .then(() =>
         page.goto(process.env.TENCENT_TARGET_URL || websiteURL, { waitUntil: 'domcontentloaded' }),
       )
-      .then(() => (triggerSelector ? page.click(triggerSelector) : undefined))
       // STEP-04: Wait for the constructor parameters captured from a fresh widget instance.
       .then(() =>
         page.waitForFunction(() => window.__captchaSolverTencent.pending().at(0) || false),
@@ -139,17 +147,27 @@ export function solveCaptcha(page, solver = client) {
 
         // Solution submission is site-specific; adapt this step to the target page.
         // Pass every returned Tencent field through the original page callback.
-        return page.evaluate(
-          (capturedRecordId, answer) => {
-            window.__captchaSolverTencent.submit(capturedRecordId, answer);
-          },
+        return page
+          .evaluate(
+            (capturedRecordId, answer) => {
+              window.__captchaSolverTencent.submit(capturedRecordId, answer);
+            },
+            recordId,
+            solution,
+          )
+          .then(() => ({ recordId, solution }));
+      })
+      // STEP-07: Confirm delivery of the same ticket and random string to the page callback.
+      .then(({ recordId, solution }) =>
+        page.waitForFunction(
+          (capturedRecordId, answer) =>
+            window.__captchaSolverTencent.received(capturedRecordId, answer),
+          {},
           recordId,
           solution,
-        );
-      })
-      // STEP-07: Require a visible, page-specific confirmation after callback delivery.
-      .then(() => page.waitForSelector(successSelector, { visible: true }))
-      .then(() => page.$eval(successSelector, (element) => element.textContent.trim()))
+        ),
+      )
+      .then(() => 'Tencent callback received the solution.')
   );
 }
 
@@ -166,7 +184,7 @@ export function main() {
         return browser.newPage();
       })
       .then((page) => solveCaptcha(page))
-      .then((message) => console.log(`Page confirmation: ${message}`))
+      .then((message) => console.log(`Callback confirmation: ${message}`))
       // STEP-08: Always close Chromium and let callers handle failures.
       .finally(() => browser?.close())
   );

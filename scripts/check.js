@@ -74,8 +74,13 @@ for await (const path of javascriptFiles('examples')) {
     ) {
       throw new Error(`${path} must explain its site-specific solution application.`);
     }
-    if (!source.includes('Page confirmation:')) {
-      throw new Error(`${path} must log page acceptance separately from the solver result.`);
+    const hasExpectedConfirmation = path.endsWith('/tencent.js')
+      ? source.includes('Callback confirmation:')
+      : source.includes('Page confirmation:');
+    if (!hasExpectedConfirmation) {
+      throw new Error(
+        `${path} must log its acceptance boundary separately from the solver result.`,
+      );
     }
     const directExecutionIndex = source.indexOf('if (process.argv[1]');
     const errorHandlerIndex = source.indexOf('.catch((error)');
