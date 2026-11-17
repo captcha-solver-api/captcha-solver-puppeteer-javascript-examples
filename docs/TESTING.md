@@ -6,13 +6,12 @@ Automated checks validated on November 16, 2026 with Node.js 22.12, Node.js 24, 
 
 - `npm run lint`: passed.
 - `npm run check`: passed (includes lint).
-- `npm test`: 15 browser integration tests passed.
+- `npm test`: 11 browser integration tests passed.
 - `npm audit --package-lock-only`: reports four low-severity findings inherited
   through `puppeteer-extra`; npm offers only a breaking downgrade as an automatic fix.
 - Tests use a local page fixture and a local API stub. They do not spend API balance.
 - Browser fixtures use the same Puppeteer Extra stealth setup as the examples.
-- Covered flows: reCAPTCHA v2, proxy task construction, known and discovered
-  callbacks, reCAPTCHA v3 script parsing and interception, embedded Turnstile,
+- Covered flows: reCAPTCHA v2, reCAPTCHA v3 script parsing, embedded Turnstile,
   reCAPTCHA Enterprise, Cloudflare Challenge and Tencent interception, Yandex
   SmartCaptcha token injection, GeeTest v3/v4 submission, solution injection, and visible success
   verification.
@@ -23,10 +22,7 @@ The following examples received a solution from Captcha Solver and the demo page
 confirmed that the answer was accepted:
 
 - `recaptcha-v2.js` — official Google reCAPTCHA v2 demo.
-- `recaptcha-v2-callback.js`.
-- `recaptcha-v2-callback-auto.js`.
 - `recaptcha-v3.js`.
-- `recaptcha-v3-interception.js`.
 - `turnstile.js` — the API returned a solution and the configured
   test page confirmed acceptance on October 12, 2026.
 
@@ -55,12 +51,6 @@ confirmed that the answer was accepted:
   mismatch, the next single task returned `ERROR_CAPTCHA_UNSOLVABLE`. The runner
   did not retry it or report a page pass. The interception, SDK task, callback,
   and visible-success verification pass against the local browser fixture.
-- `recaptcha-v2-proxy.js` and `recaptcha-v2-callback-proxy.js`: tested on
-  October 12, 2026 with an authenticated EU HTTP proxy. Proxy authentication and
-  outbound connectivity succeeded, and both examples created `RecaptchaV2Task`
-  requests using the same proxy as Chrome. Each single API task returned
-  `ERROR_CAPTCHA_UNSOLVABLE`; the runner did not retry either task or report a
-  page pass. Proxy credentials were not written to the repository or report.
 
 Raw live reports and failure screenshots stay in the ignored `artifacts/`
 directory and are not committed.

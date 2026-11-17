@@ -7,11 +7,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { CaptchaClient } from '@captcha-solver-api/javascript-sdk';
 import { solveCaptcha as v2 } from '../examples/recaptcha-v2.js';
 import { solveCaptcha as enterprise } from '../examples/recaptcha-v2-enterprise.js';
-import { solveCaptcha as v2Proxy } from '../examples/recaptcha-v2-proxy.js';
-import { solveCaptcha as callback } from '../examples/recaptcha-v2-callback.js';
-import { solveCaptcha as callbackAuto } from '../examples/recaptcha-v2-callback-auto.js';
 import { solveCaptcha as v3 } from '../examples/recaptcha-v3.js';
-import { solveCaptcha as v3Extended } from '../examples/recaptcha-v3-interception.js';
 import { solveCaptcha as turnstile } from '../examples/turnstile.js';
 import { solveCaptcha as challenge } from '../examples/turnstile-challenge.js';
 import { solveCaptcha as tencent } from '../examples/tencent.js';
@@ -36,11 +32,6 @@ const fixtures = {
     <script>document.querySelector('button').onclick = () => {
       if (document.querySelector('textarea').value === 'fixture-token') accept();
     };</script>`,
-  '/callback': `<div data-sitekey="fixture-key"></div><script>
-    window.verifyDemoRecaptcha = token => { if (token === 'fixture-token') accept(); };
-    window.___grecaptcha_cfg = { clients: {0: { child: { sitekey: 'fixture-key', callback: window.verifyDemoRecaptcha } }} };
-    window.___grecaptcha_cfg.clients.self = window.___grecaptcha_cfg.clients;
-    </script>`,
   '/v3': `${button}<script>
     window.verifyRecaptcha = token => { if (token === 'fixture-token') accept(); };
     window.grecaptcha = { ready: fn => fn(), execute: () => Promise.resolve('browser-token') };
@@ -223,28 +214,10 @@ test('Enterprise v2 creates the Enterprise task and verifies acceptance', async 
     delete process.env.RECAPTCHA_ENTERPRISE_TARGET_URL;
   }
 });
-test('proxy variant passes the configured proxy into its task', async () => {
-  const { task } = await run('/v2', v2Proxy, {
-    proxyType: 'http',
-    proxyAddress: 'proxy.example.com',
-    proxyPort: 8080,
-  });
-  assert.equal(task.type, 'RecaptchaV2Task');
-  assert.equal(task.proxyPort, 8080);
-});
-test('known callback receives the API token', async () => {
-  await run('/callback', callback);
-});
-test('automatic discovery handles cyclic callback configuration', async () => {
-  await run('/callback', callbackAuto);
-});
 test('v3 preserves the action extracted from the page script', async () => {
   const { task } = await run('/v3', v3);
   assert.equal(task.pageAction, 'fixture_action');
   assert.equal(task.minScore, 0.3);
-});
-test('extended v3 resolves the intercepted promise with the API answer', async () => {
-  await run('/v3', v3Extended);
 });
 test('embedded Turnstile submits its response field', async () => {
   await run('/turnstile', turnstile);

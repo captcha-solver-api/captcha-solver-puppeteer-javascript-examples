@@ -76,7 +76,7 @@ Stealth is not a substitute for permission to automate a website.
 Each run logs the solver result and then separately verifies page acceptance.
 Receiving a solution from the SDK proves only that the service completed the
 task; it does not prove that the target page accepted the result. Image bodies
-are never printed, and API keys and proxy credentials must remain in `.env`.
+are never printed, and API keys must remain in `.env`.
 
 Every example is intentionally self-contained and written as a linear tutorial. Browser examples
 show SDK and browser setup, page navigation, parameter collection, task creation, `solver.solve()`,
@@ -86,26 +86,21 @@ repeated so that an example can be copied without also copying hidden project he
 
 ## Examples
 
-| Captcha                                    | File                                                                        | Command                               |
-| ------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------- |
-| reCAPTCHA v2                               | [`recaptcha-v2.js`](examples/recaptcha-v2.js)                               | `npm run recaptcha-v2`                |
-| reCAPTCHA v2 Enterprise                    | [`recaptcha-v2-enterprise.js`](examples/recaptcha-v2-enterprise.js)         | `npm run recaptcha-v2-enterprise`     |
-| reCAPTCHA v2 + proxy                       | [`recaptcha-v2-proxy.js`](examples/recaptcha-v2-proxy.js)                   | `npm run recaptcha-v2-proxy`          |
-| reCAPTCHA v2 callback                      | [`recaptcha-v2-callback.js`](examples/recaptcha-v2-callback.js)             | `npm run recaptcha-v2-callback`       |
-| reCAPTCHA v2 callback, automatic discovery | [`recaptcha-v2-callback-auto.js`](examples/recaptcha-v2-callback-auto.js)   | `npm run recaptcha-v2-callback-auto`  |
-| reCAPTCHA v2 callback + proxy              | [`recaptcha-v2-callback-proxy.js`](examples/recaptcha-v2-callback-proxy.js) | `npm run recaptcha-v2-callback-proxy` |
-| reCAPTCHA v3                               | [`recaptcha-v3.js`](examples/recaptcha-v3.js)                               | `npm run recaptcha-v3`                |
-| reCAPTCHA v3 interception                  | [`recaptcha-v3-interception.js`](examples/recaptcha-v3-interception.js)     | `npm run recaptcha-v3-interception`   |
-| Cloudflare Turnstile                       | [`turnstile.js`](examples/turnstile.js)                                     | `npm run turnstile`                   |
-| Cloudflare Challenge                       | [`turnstile-challenge.js`](examples/turnstile-challenge.js)                 | `npm run turnstile-challenge`         |
-| Tencent CAPTCHA                            | [`tencent.js`](examples/tencent.js)                                         | `npm run tencent`                     |
-| Yandex SmartCaptcha                        | [`yandex-smartcaptcha.js`](examples/yandex-smartcaptcha.js)                 | `npm run yandex`                      |
-| Yandex image challenge                     | [`yandex-smartcaptcha-image.js`](examples/yandex-smartcaptcha-image.js)     | `npm run yandex-image`                |
-| GeeTest v3                                 | [`geetest-v3.js`](examples/geetest-v3.js)                                   | `npm run geetest-v3`                  |
-| GeeTest v4                                 | [`geetest-v4.js`](examples/geetest-v4.js)                                   | `npm run geetest-v4`                  |
-| Image-to-text                              | [`image-to-text.js`](examples/image-to-text.js)                             | `npm run image-to-text`               |
-| Coordinates                                | [`coordinates.js`](examples/coordinates.js)                                 | `npm run coordinates`                 |
-| Balance                                    | [`balance.js`](examples/balance.js)                                         | `npm run balance`                     |
+| Captcha                 | File                                                                    | Command                           |
+| ----------------------- | ----------------------------------------------------------------------- | --------------------------------- |
+| reCAPTCHA v2            | [`recaptcha-v2.js`](examples/recaptcha-v2.js)                           | `npm run recaptcha-v2`            |
+| reCAPTCHA v2 Enterprise | [`recaptcha-v2-enterprise.js`](examples/recaptcha-v2-enterprise.js)     | `npm run recaptcha-v2-enterprise` |
+| reCAPTCHA v3            | [`recaptcha-v3.js`](examples/recaptcha-v3.js)                           | `npm run recaptcha-v3`            |
+| Cloudflare Turnstile    | [`turnstile.js`](examples/turnstile.js)                                 | `npm run turnstile`               |
+| Cloudflare Challenge    | [`turnstile-challenge.js`](examples/turnstile-challenge.js)             | `npm run turnstile-challenge`     |
+| Tencent CAPTCHA         | [`tencent.js`](examples/tencent.js)                                     | `npm run tencent`                 |
+| Yandex SmartCaptcha     | [`yandex-smartcaptcha.js`](examples/yandex-smartcaptcha.js)             | `npm run yandex`                  |
+| Yandex image challenge  | [`yandex-smartcaptcha-image.js`](examples/yandex-smartcaptcha-image.js) | `npm run yandex-image`            |
+| GeeTest v3              | [`geetest-v3.js`](examples/geetest-v3.js)                               | `npm run geetest-v3`              |
+| GeeTest v4              | [`geetest-v4.js`](examples/geetest-v4.js)                               | `npm run geetest-v4`              |
+| Image-to-text           | [`image-to-text.js`](examples/image-to-text.js)                         | `npm run image-to-text`           |
+| Coordinates             | [`coordinates.js`](examples/coordinates.js)                             | `npm run coordinates`             |
+| Balance                 | [`balance.js`](examples/balance.js)                                     | `npm run balance`                 |
 
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos
 by default. Set `TARGET_URL` to override the reCAPTCHA target and
@@ -119,18 +114,6 @@ different page.
 > [!IMPORTANT]
 > CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and
 > do not call the paid service. Run live tests only with explicit authorization.
-
-## Proxy
-
-```dotenv
-PROXY_TYPE=http
-PROXY_ADDRESS=proxy.example.com
-PROXY_PORT=8080
-PROXY_LOGIN=
-PROXY_PASSWORD=
-```
-
-The browser and API task use the same proxy.
 
 ## Checks
 

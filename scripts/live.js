@@ -4,7 +4,7 @@ import { basename } from 'node:path';
 /** Remove locally configured credentials from live-test output. */
 function redact(value) {
   let text = String(value);
-  for (const name of ['CAPTCHA_API_KEY', 'PROXY_LOGIN', 'PROXY_PASSWORD']) {
+  for (const name of ['CAPTCHA_API_KEY']) {
     if (process.env[name]) text = text.split(process.env[name]).join('[REDACTED]');
   }
   return text;
@@ -20,7 +20,7 @@ const paths = Object.fromEntries(
     }),
 );
 const allowed = Object.keys(paths);
-const examples = allowed.filter((name) => !name.endsWith('-proxy') && name !== 'tencent');
+const examples = allowed.filter((name) => name !== 'tencent');
 const selected = process.argv.slice(2).length ? process.argv.slice(2) : examples;
 if (selected.some((name) => !allowed.includes(name))) throw new Error('Unknown example name.');
 await mkdir('artifacts', { recursive: true });
