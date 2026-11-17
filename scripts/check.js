@@ -37,6 +37,20 @@ for await (const path of javascriptFiles('examples')) {
   for (const [pattern, message] of forbiddenPatterns) {
     if (pattern.test(source)) throw new Error(`${path} ${message}.`);
   }
+
+  const allowedConsoleOutput = [
+    /console\.log\('Solution:', solution\);/,
+    /console\.log\('Page confirmation:', message\)/,
+    /console\.log\(`Page confirmation: \$\{message\}`\)/,
+    /console\.log\(solution\.(?:coordinates|text)\);/,
+    /console\.log\(balance\);/,
+  ];
+  for (const line of source.split('\n').filter((value) => value.includes('console.log('))) {
+    if (!allowedConsoleOutput.some((pattern) => pattern.test(line))) {
+      throw new Error(`${path} contains unsupported console output: ${line.trim()}`);
+    }
+  }
+
   const guideCount = source.match(/How it works:/g)?.length || 0;
   if (guideCount !== 1) {
     throw new Error(`${path} must contain exactly one How it works guide.`);

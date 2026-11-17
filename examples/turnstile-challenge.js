@@ -114,7 +114,6 @@ export function solveCaptcha(page, solver = client) {
         }
         if (state.success) return { alreadyPassed: state.success };
 
-        console.log('Captured parameters:', state.params);
         return page.cookies().then((cookies) => {
           previousClearance = cookies.find((cookie) => cookie.name === 'cf_clearance')?.value;
           // STEP-04: Build the task and wait for the solver result.
