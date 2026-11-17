@@ -4,8 +4,8 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 
 /**
  * This example solves the image-selection stage of Yandex SmartCaptcha. It reads the challenge
- * and instruction images, creates Tasks.CoordinatesTask, sends it through CaptchaClient.solve(),
- * and prints the returned click coordinates.
+ * and instruction images, creates Tasks.YandexSmartCaptchaImageTask, sends it through
+ * CaptchaClient.solve(), and prints the returned click coordinates.
  *
  * To adapt this example, replace both sample images with images from the same challenge. Applying
  * returned coordinates is site-specific: inspect the target widget, its scaling, and click flow.
@@ -13,16 +13,22 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
  * How it works:
  * STEP-01 - Create the SDK client.
  * STEP-02 - Read the challenge and instruction images.
- * STEP-03 - Create and send the coordinate task.
+ * STEP-03 - Create and send the Yandex SmartCaptcha image task.
  * STEP-04 - Print the returned coordinates or report an error.
  */
 
-/** Read both sample images, solve the coordinate task, and print its result. */
-export function main() {
+/**
+ * Read both sample images, solve the Yandex image task, and print its result.
+ * @param {CaptchaClient} [solver] Configured client, primarily for local testing.
+ * @returns {Promise<import('@captcha-solver-api/javascript-sdk').CoordinatesSolution>} Solution.
+ */
+export function main(solver) {
   // STEP-01: Create the SDK client with the API key from CAPTCHA_API_KEY.
-  const client = new CaptchaClient({
-    clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
-  });
+  const client =
+    solver ||
+    new CaptchaClient({
+      clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
+    });
 
   // STEP-02: Read both images without printing their base64 contents.
   return Promise.all([
@@ -30,13 +36,13 @@ export function main() {
     readFile(new URL('../assets/yandex-smartcaptcha-task.png', import.meta.url)),
   ])
     .then(([body, instructions]) => {
-      // STEP-03: Create and send the coordinate task.
-      const task = new Tasks.CoordinatesTask({
-        body: body.toString('base64'),
+      // STEP-03: Create and send the dedicated Yandex SmartCaptcha image task.
+      const task = new Tasks.YandexSmartCaptchaImageTask({
+        image: body.toString('base64'),
         imgInstructions: instructions.toString('base64'),
         comment: 'Select objects in the order shown in the instruction image',
       });
-      console.log('3. Sending Coordinates task with challenge and instruction images');
+      console.log('3. Sending SmartCaptchaTask with challenge and instruction images');
       return client.solve(task);
     })
     .then((solution) => {
