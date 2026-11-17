@@ -33,6 +33,7 @@ export function solveCaptcha(page, solver) {
     page
       .goto(websiteURL, { waitUntil: 'domcontentloaded' })
       // STEP-02: Extract captcha_id from the GeeTest loader script URL.
+      .then(() => page.waitForSelector('script[src*="captcha_id="]'))
       .then(() => page.$eval('script[src*="captcha_id="]', (element) => element.src))
       .then((scriptURL) => {
         const captchaId = new URL(scriptURL).searchParams.get('captcha_id');

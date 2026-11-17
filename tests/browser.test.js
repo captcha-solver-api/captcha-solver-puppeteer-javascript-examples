@@ -97,7 +97,13 @@ const fixtures = {
     window.initGeetest = () => {};
     initGeetest({ gt: 'fixture-gt', challenge: 'fixture-challenge' }, () => {});
     </script>`,
-  '/geetest-v4': '<script src="/load?captcha_id=fixture-captcha-id"></script>',
+  '/geetest-v4': `<script>
+    setTimeout(() => {
+      const loader = document.createElement('script');
+      loader.src = '/load?captcha_id=fixture-captcha-id';
+      document.head.append(loader);
+    }, 25);
+    </script>`,
 };
 
 before(async () => {
