@@ -2,7 +2,6 @@ import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { demos } from '../config/demos.js';
 
 /**
  * This example shows how to solve Google reCAPTCHA v2 without using a proxy. It opens the demo
@@ -27,7 +26,8 @@ import { demos } from '../config/demos.js';
 puppeteer.use(StealthPlugin());
 
 // STEP-01: Read the target URL and create the SDK client.
-const websiteURL = process.env.RECAPTCHA_V2_TARGET_URL || demos.recaptchaV2;
+const websiteURL =
+  process.env.RECAPTCHA_V2_TARGET_URL || 'https://www.google.com/recaptcha/api2/demo';
 const client = new CaptchaClient({
   clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
 });

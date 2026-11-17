@@ -11,7 +11,7 @@ async function* javascriptFiles(directory) {
   }
 }
 
-for (const directory of ['config', 'examples', 'scripts', 'tests']) {
+for (const directory of ['examples', 'scripts', 'tests']) {
   for await (const path of javascriptFiles(directory)) {
     const result = spawnSync(process.execPath, ['--check', path], {
       stdio: 'inherit',
@@ -29,6 +29,10 @@ for await (const path of javascriptFiles('examples')) {
     [/_finallyRethrows|Promise\.resolve\(/, 'contains generated Promise wrapper code'],
     [/(?:match|args)\[\d+\]/, 'contains a magic positional index'],
     [/timeout:\s*\d/, 'contains an unnamed numeric timeout'],
+    [
+      /from\s+['"]\.\.?\/[^'"]+\.js['"]/,
+      'must be standalone and cannot import a local JavaScript module',
+    ],
   ];
   for (const [pattern, message] of forbiddenPatterns) {
     if (pattern.test(source)) throw new Error(`${path} ${message}.`);
