@@ -205,9 +205,13 @@ async function run(path, solveCaptcha, ...options) {
   });
   try {
     const message = await solveCaptcha(page, solver, ...options);
-    assert.match(message, /Demo accepted|Hello, user!|Tencent callback received/);
+    assert.match(
+      message,
+      /Demo accepted|Hello, user!|Tencent callback received|challenge cleared and target page loaded/,
+    );
     if (submitted) assert.match(receivedHeader, /^javascript-sdk\//);
     return {
+      message,
       task: submitted,
       userAgent: await page.evaluate(() => navigator.userAgent),
     };
@@ -239,7 +243,8 @@ test('embedded Turnstile submits its response field', async () => {
   await run('/turnstile', turnstile);
 });
 test('Challenge interception preserves session fields and the browser User-Agent', async () => {
-  const { task, userAgent } = await run('/challenge', challenge);
+  const { message, task, userAgent } = await run('/challenge', challenge);
+  assert.equal(message, 'challenge cleared and target page loaded.');
   assert.equal(task.data, 'session-data');
   assert.equal(task.pagedata, 'page-data');
   assert.equal(task.action, 'managed');

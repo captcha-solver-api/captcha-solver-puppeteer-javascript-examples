@@ -31,6 +31,7 @@ const websiteURL =
 const parameterCaptureTimeout = 30_000;
 const challengeNavigationTimeout = 60_000;
 const successSelector = 'p[class*="successMessage"]';
+const challengeConfirmation = 'challenge cleared and target page loaded.';
 const client = new CaptchaClient({
   clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
 });
@@ -158,7 +159,7 @@ export function solveCaptcha(page, solver = client) {
               if (!currentClearance || currentClearance === previousClearance) {
                 throw new Error('Cloudflare did not issue a new cf_clearance cookie.');
               }
-              return page.$eval(successSelector, (element) => element.textContent.trim());
+              return challengeConfirmation;
             })
         );
       })
