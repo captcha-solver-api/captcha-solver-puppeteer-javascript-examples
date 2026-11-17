@@ -30,8 +30,8 @@ puppeteer.use(StealthPlugin());
 const websiteURL = process.env.YANDEX_TARGET_URL || demos.yandexSmartCaptcha;
 const siteKeySelector = '.smart-captcha[data-sitekey]';
 const tokenSelector = 'input[name="smart-token"]';
-const submitSelector = process.env.SUBMIT_SELECTOR || '#smartcaptcha-demo-submit';
-const expectedSuccessText = process.env.YANDEX_SUCCESS_TEXT || 'Hello, user!';
+const submitSelector = '#smartcaptcha-demo-submit';
+const expectedSuccessText = 'Hello, user!';
 const client = new CaptchaClient({
   clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
 });
@@ -87,22 +87,15 @@ export function solveCaptcha(page, solver = client) {
       })
       // STEP-06: Submit the form and verify that the page accepts the token.
       .then(() => page.click(submitSelector))
-      .then(() => {
-        if (process.env.SUCCESS_SELECTOR) {
-          return page
-            .waitForSelector(process.env.SUCCESS_SELECTOR, { visible: true })
-            .then(() =>
-              page.$eval(process.env.SUCCESS_SELECTOR, (element) => element.textContent.trim()),
-            );
-        }
-        return page
+      .then(() =>
+        page
           .waitForFunction(
             (text) => document.body.innerText.includes(text),
             {},
             expectedSuccessText,
           )
-          .then(() => expectedSuccessText);
-      })
+          .then(() => expectedSuccessText),
+      )
       .then((message) => {
         console.log(`Page confirmation: ${message}`);
         return message;
@@ -120,7 +113,6 @@ export function main() {
     puppeteer
       .launch({
         headless: process.env.HEADLESS === 'true',
-        executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
         defaultViewport: { width: 1280, height: 900 },
       })
       .then((launchedBrowser) => {

@@ -23,6 +23,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 puppeteer.use(StealthPlugin());
 const DEFAULT_URL = 'https://example.com/page_with_recaptcha_v2_enterprise';
+const submitSelector = 'button[type="submit"]';
+const successSelector = 'p[class*="successMessage"]';
 
 /** Solve and submit reCAPTCHA Enterprise on an already opened page. */
 export function solveCaptcha(page, solver) {
@@ -57,13 +59,12 @@ export function solveCaptcha(page, solver) {
         response.dispatchEvent(new Event('change', { bubbles: true }));
       }, solution.gRecaptchaResponse);
     })
-    .then(() => page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"]'))
+    .then(() => page.click(submitSelector))
     .then(() => {
       // STEP-05: Require a visible, page-specific success message.
-      const selector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
       return page
-        .waitForSelector(selector, { visible: true })
-        .then(() => page.$eval(selector, (element) => element.textContent.trim()));
+        .waitForSelector(successSelector, { visible: true })
+        .then(() => page.$eval(successSelector, (element) => element.textContent.trim()));
     });
 }
 
@@ -74,7 +75,6 @@ export function main() {
   return puppeteer
     .launch({
       headless: process.env.HEADLESS === 'true',
-      executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
     })
     .then((instance) => {
       browser = instance;

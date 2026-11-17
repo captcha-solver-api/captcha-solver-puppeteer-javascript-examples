@@ -88,7 +88,10 @@ const fixtures = {
   '/yandex': `<div class="smart-captcha" data-sitekey="fixture-key"></div>
     <input name="smart-token" type="hidden"><button id="smartcaptcha-demo-submit">Submit</button>
     <script>document.querySelector('button').onclick = () => {
-      if (document.querySelector('[name="smart-token"]').value === 'fixture-token') accept();
+      if (document.querySelector('[name="smart-token"]').value === 'fixture-token') {
+        document.querySelector('p[class*="successMessage"]').textContent = 'Hello, user!';
+        accept();
+      }
     };</script>`,
   '/geetest-v3': `<script>
     window.initGeetest = () => {};
@@ -98,14 +101,8 @@ const fixtures = {
 };
 
 before(async () => {
-  delete process.env.SUCCESS_SELECTOR;
-  delete process.env.SUBMIT_SELECTOR;
-  delete process.env.CALLBACK_NAME;
-  delete process.env.RECAPTCHA_SITEKEY;
-  delete process.env.RECAPTCHA_ACTION;
   delete process.env.TENCENT_TRIGGER_SELECTOR;
   delete process.env.TENCENT_SUCCESS_SELECTOR;
-  process.env.RECAPTCHA_MIN_SCORE = '0.3';
   server = createServer(async (req, res) => {
     if (req.method === 'GET' && req.url === '/TCaptcha-global.js') {
       res.setHeader('Content-Type', 'text/javascript');
@@ -172,7 +169,6 @@ before(async () => {
   baseUrl = `http://127.0.0.1:${server.address().port}`;
   browser = await puppeteer.launch({
     headless: true,
-    executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
     // GitHub's hosted runner requires Chrome's sandbox to be disabled. Local
     // examples keep the browser sandbox enabled.
     args: process.env.CI ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
@@ -205,7 +201,7 @@ async function run(path, solveCaptcha, ...options) {
   });
   try {
     const message = await solveCaptcha(page, solver, ...options);
-    assert.match(message, /Demo accepted/);
+    assert.match(message, /Demo accepted|Hello, user!/);
     if (submitted) assert.match(receivedHeader, /^javascript-sdk\//);
     return {
       task: submitted,
@@ -261,7 +257,6 @@ test('Tencent interception sends captured fields and invokes the original callba
   assert.match(task.captchaScript, /\/TCaptcha-global\.js$/);
 });
 test('Yandex SmartCaptcha sends the site key and submits the returned token', async () => {
-  process.env.SUCCESS_SELECTOR = 'p[class*="successMessage"]';
   process.env.YANDEX_TARGET_URL = `${baseUrl}/yandex`;
   try {
     const { task, userAgent } = await run('/yandex', yandex);
@@ -269,7 +264,6 @@ test('Yandex SmartCaptcha sends the site key and submits the returned token', as
     assert.equal(task.websiteKey, 'fixture-key');
     assert.equal(task.userAgent, userAgent);
   } finally {
-    delete process.env.SUCCESS_SELECTOR;
     delete process.env.YANDEX_TARGET_URL;
   }
 });

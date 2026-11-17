@@ -97,7 +97,6 @@ export function main() {
   return puppeteer
     .launch({
       headless: process.env.HEADLESS === 'true',
-      executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
     })
     .then((instance) => {
       browser = instance;

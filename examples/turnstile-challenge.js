@@ -30,6 +30,7 @@ const websiteURL =
   process.env.TURNSTILE_CHALLENGE_TARGET_URL || 'https://example.com/page_with_turnstile_challenge';
 const parameterCaptureTimeout = 30_000;
 const challengeNavigationTimeout = 60_000;
+const successSelector = 'p[class*="successMessage"]';
 const client = new CaptchaClient({
   clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
 });
@@ -70,7 +71,6 @@ function installInterceptor(page) {
  * @returns {Promise<string>} Page text that confirms acceptance.
  */
 export function solveCaptcha(page, solver = client) {
-  const successSelector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
   let previousClearance;
 
   // STEP-02: Install the interceptor before the target initializes Turnstile.
@@ -172,7 +172,6 @@ export function main() {
     puppeteer
       .launch({
         headless: process.env.HEADLESS === 'true',
-        executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
       })
       .then((instance) => {
         browser = instance;

@@ -28,7 +28,9 @@ puppeteer.use(StealthPlugin());
 // STEP-01: Read the target and task options, then create the SDK client.
 const websiteURL =
   process.env.RECAPTCHA_V3_TARGET_URL || 'https://example.com/page_with_recaptcha_v3';
-const minimumScore = Number(process.env.RECAPTCHA_MIN_SCORE || 0.3);
+const minimumScore = 0.3;
+const callbackName = 'verifyRecaptcha';
+const successSelector = 'p[class*="successMessage"]';
 const client = new CaptchaClient({
   clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
 });
@@ -42,30 +44,19 @@ let browser;
  * @returns {Promise<string>} Page text that confirms acceptance.
  */
 export function solveCaptcha(page, solver = client) {
-  const callbackName = process.env.CALLBACK_NAME || 'verifyRecaptcha';
-  const successSelector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
-
   // STEP-02: Open the configured page containing reCAPTCHA v3.
   return (
     page
       .goto(process.env.RECAPTCHA_V3_TARGET_URL || websiteURL, { waitUntil: 'domcontentloaded' })
       // STEP-03: Extract the site key and action from grecaptcha.execute(); v3 has no widget.
       .then(() =>
-        page.waitForFunction(
-          (configuredSiteKey, configuredAction) => {
-            if (configuredSiteKey && configuredAction) {
-              return { websiteKey: configuredSiteKey, pageAction: configuredAction };
-            }
-            const source = Array.from(document.scripts, (script) => script.textContent).join('\n');
-            const match = source.match(
-              /grecaptcha\.execute\s*\(\s*['"](?<websiteKey>[^'"]+)['"]\s*,\s*\{[^}]*action\s*:\s*['"](?<pageAction>[^'"]+)['"]/,
-            );
-            return match?.groups || false;
-          },
-          {},
-          process.env.RECAPTCHA_SITEKEY || '',
-          process.env.RECAPTCHA_ACTION || '',
-        ),
+        page.waitForFunction(() => {
+          const source = Array.from(document.scripts, (script) => script.textContent).join('\n');
+          const match = source.match(
+            /grecaptcha\.execute\s*\(\s*['"](?<websiteKey>[^'"]+)['"]\s*,\s*\{[^}]*action\s*:\s*['"](?<pageAction>[^'"]+)['"]/,
+          );
+          return match?.groups || false;
+        }),
       )
       .then((handle) =>
         handle.jsonValue().finally(() => {
@@ -114,7 +105,6 @@ export function main() {
     puppeteer
       .launch({
         headless: process.env.HEADLESS === 'true',
-        executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
       })
       .then((instance) => {
         browser = instance;

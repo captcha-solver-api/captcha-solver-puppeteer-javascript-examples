@@ -42,9 +42,8 @@ let browser;
 export function solveCaptcha(page, solver = client) {
   const widgetSelector = '.cf-turnstile[data-sitekey], [data-sitekey]';
   const responseSelector = '[name="cf-turnstile-response"]';
-  const submitSelector =
-    process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]';
-  const successSelector = process.env.SUCCESS_SELECTOR || 'p[class*="successMessage"]';
+  const submitSelector = 'button[type="submit"], input[type="submit"]';
+  const successSelector = 'p[class*="successMessage"]';
 
   // STEP-02: Open the configured page containing Turnstile.
   return (
@@ -99,7 +98,6 @@ export function main() {
     puppeteer
       .launch({
         headless: process.env.HEADLESS === 'true',
-        executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
       })
       .then((instance) => {
         browser = instance;
