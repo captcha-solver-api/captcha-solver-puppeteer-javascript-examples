@@ -47,7 +47,7 @@ Copy-Item .env.example .env
 Set your API key in `.env`:
 
 ```dotenv
-CAPTCHA_API_KEY=your_api_key
+CAPTCHA_API_KEY=your_captcha_solver_api_key
 ```
 
 The npm example commands load this file through Node.js `--env-file-if-exists=.env`; using
@@ -109,10 +109,11 @@ repeated so that an example can be copied without also copying hidden project he
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos by default. Other
 browser examples use the matching `*_TARGET_URL` variable from `.env.example`, such as
 `RECAPTCHA_V3_TARGET_URL`, `TURNSTILE_TARGET_URL`, `TURNSTILE_CHALLENGE_TARGET_URL`, and
-`TENCENT_TARGET_URL`. The `example.com/page_with_...` values are placeholders, not working CAPTCHA
-demos. Replace them with pages you own or are authorized to test. For Tencent, set
-`TENCENT_SCRIPT_URL` if the script URL cannot be captured from the page. Changing a URL does not
-automatically adapt selectors, callbacks, submission, or acceptance checks to a different page.
+`TENCENT_TARGET_URL`; Yandex uses `YANDEX_TARGET_URL`. The `example.com/page_with_...` values are
+placeholders, not working CAPTCHA demos. Replace them with pages you own or are authorized to test.
+For Tencent, set `TENCENT_SCRIPT_URL` if the script URL cannot be captured from the page. Changing a
+URL does not automatically adapt selectors, callbacks, submission, or acceptance checks to a
+different page.
 
 > [!IMPORTANT]
 > CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and

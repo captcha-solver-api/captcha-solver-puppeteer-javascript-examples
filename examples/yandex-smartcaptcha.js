@@ -27,7 +27,7 @@ import { demos } from '../config/demos.js';
 
 puppeteer.use(StealthPlugin());
 
-const websiteURL = process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || demos.yandexSmartCaptcha;
+const websiteURL = process.env.YANDEX_TARGET_URL || demos.yandexSmartCaptcha;
 const siteKeySelector = '.smart-captcha[data-sitekey]';
 const tokenSelector = 'input[name="smart-token"]';
 const submitSelector = process.env.SUBMIT_SELECTOR || '#smartcaptcha-demo-submit';
@@ -49,7 +49,7 @@ export function solveCaptcha(page, solver = client) {
   // Open the configured target page after main() launches Chromium.
   return (
     page
-      .goto(process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || websiteURL, {
+      .goto(process.env.YANDEX_TARGET_URL || websiteURL, {
         waitUntil: 'domcontentloaded',
       })
       .then(() => page.waitForSelector(siteKeySelector))
@@ -113,7 +113,7 @@ export function solveCaptcha(page, solver = client) {
 /** Run the complete standalone Yandex SmartCaptcha example. */
 export function main() {
   // STEP-01: Configure the target and create the SDK client.
-  console.log('Target:', process.env.YANDEX_SMARTCAPTCHA_TARGET_URL || websiteURL);
+  console.log('Target:', process.env.YANDEX_TARGET_URL || websiteURL);
 
   // STEP-02: Launch Chromium and open the target page.
   return (
