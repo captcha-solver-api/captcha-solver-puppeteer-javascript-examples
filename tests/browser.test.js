@@ -49,10 +49,20 @@ const fixtures = {
       sitekey: 'fixture-key', action: 'managed', cData: 'session-data',
       chlPageData: 'page-data', callback: token => {
         if (token === 'fixture-token') {
-          document.cookie = 'cf_clearance=fresh-fixture-clearance; path=/';
-          accept();
+           location.href = '/challenge-passed';
         }
       },
+    }), 25);
+    </script>`,
+  '/challenge-passed': `<script>
+    document.cookie = 'cf_clearance=fresh-fixture-clearance; path=/';
+    accept();
+    </script>`,
+  '/challenge-http-error': `<script>
+    window.turnstile = { render: () => 'widget-id' };
+    setTimeout(() => window.turnstile.render('#widget', {
+      sitekey: 'fixture-key', action: 'managed', cData: 'session-data',
+      chlPageData: 'page-data', callback: () => { location.href = '/challenge-rejected'; },
     }), 25);
     </script>`,
   '/already': `<script>accept();</script>`,
@@ -154,6 +164,7 @@ before(async () => {
       }
     } else {
       res.setHeader('Content-Type', 'text/html');
+      if (req.url === '/challenge-rejected') res.statusCode = 403;
       res.end(success + (fixtures[req.url] || ''));
     }
   }).listen(0, '127.0.0.1');
@@ -237,6 +248,9 @@ test('Challenge interception preserves session fields and the browser User-Agent
 });
 test('an already passed Challenge makes no paid request', async () => {
   assert.equal((await run('/already', challenge)).task, null);
+});
+test('Challenge rejects a failed navigation response', async () => {
+  await assert.rejects(run('/challenge-http-error', challenge), /HTTP 403/);
 });
 test('Tencent interception sends captured fields and invokes the original callback', async () => {
   process.env.TENCENT_TRIGGER_SELECTOR = '#open-tencent';

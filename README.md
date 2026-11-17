@@ -50,6 +50,9 @@ Set your API key in `.env`:
 CAPTCHA_API_KEY=your_api_key
 ```
 
+The npm example commands load this file through Node.js `--env-file-if-exists=.env`; using
+`process.env` in source code does not load `.env` by itself.
+
 ## Run
 
 ```bash
@@ -68,15 +71,16 @@ npm run coordinates
 npm run balance
 ```
 
-Chrome opens in visible mode. Set `HEADLESS=true` in `.env` to run it in the
-background. Every example launches Chrome through `puppeteer-extra` with
-`puppeteer-extra-plugin-stealth`, which reduces common automation fingerprints.
-Stealth is not a substitute for permission to automate a website.
+Browser examples open Chrome in visible mode. Set `HEADLESS=true` in `.env` to run them in the
+background. They launch Chrome through `puppeteer-extra` with `puppeteer-extra-plugin-stealth`,
+which reduces common automation fingerprints. Stealth is not a substitute for permission to
+automate a website.
 
-Each run logs the solver result and then separately verifies page acceptance.
-Receiving a solution from the SDK proves only that the service completed the
-task; it does not prove that the target page accepted the result. Image bodies
-are never printed, and API keys must remain in `.env`.
+Browser examples log the solver result and then separately verify page acceptance. Receiving a
+solution from the SDK proves only that the service completed the task; it does not prove that the
+target page accepted the result. Image and balance examples print their applicable SDK result
+without inventing a browser acceptance step. Image bodies are never printed, and API keys must
+remain in `.env`.
 
 Every example is intentionally self-contained and written as a linear tutorial. Browser examples
 show SDK and browser setup, page navigation, parameter collection, task creation, `solver.solve()`,

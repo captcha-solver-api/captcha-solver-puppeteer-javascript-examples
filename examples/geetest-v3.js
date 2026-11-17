@@ -6,7 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 /**
  * This example solves GeeTest v3 without a proxy. It intercepts a fresh gt/challenge pair,
  * creates Tasks.GeeTestProxyless, submits the returned fields to the page verification endpoint,
- * and requires an explicit successful response.
+ * and requires an explicit successful response. It uses CaptchaClient.solve().
  *
  * To adapt it, change GEETEST_V3_TARGET_URL and inspect how the target initializes GeeTest,
  * consumes the solution, and reports acceptance. Solution integration is unique to every site.
@@ -22,6 +22,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 puppeteer.use(StealthPlugin());
 const DEFAULT_URL = 'https://example.com/page_with_geetest_v3';
+const solverTimeout = 300_000;
 
 /** Solve GeeTest v3 on an already opened page. */
 export function solveCaptcha(page, solver) {
@@ -90,7 +91,7 @@ export function solveCaptcha(page, solver) {
 export function main() {
   const solver = new CaptchaClient({
     clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
-    timeout: 300_000,
+    timeout: solverTimeout,
   });
   let browser;
   return puppeteer

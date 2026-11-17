@@ -28,6 +28,7 @@ for await (const path of javascriptFiles('examples')) {
     [/\basync\b|\bawait\b/, 'must use a Promise chain instead of async/await'],
     [/_finallyRethrows|Promise\.resolve\(/, 'contains generated Promise wrapper code'],
     [/(?:match|args)\[\d+\]/, 'contains a magic positional index'],
+    [/timeout:\s*\d/, 'contains an unnamed numeric timeout'],
   ];
   for (const [pattern, message] of forbiddenPatterns) {
     if (pattern.test(source)) throw new Error(`${path} ${message}.`);
@@ -76,6 +77,19 @@ for await (const path of javascriptFiles('examples')) {
     if (!source.includes('Page confirmation:')) {
       throw new Error(`${path} must log page acceptance separately from the solver result.`);
     }
+    const directExecutionIndex = source.indexOf('if (process.argv[1]');
+    const errorHandlerIndex = source.indexOf('.catch((error)');
+    if (errorHandlerIndex < directExecutionIndex) {
+      throw new Error(`${path} main() must reject so the live runner can report failures.`);
+    }
+  }
+
+  const intro = source.match(/\/\*\*[\s\S]*?\*\//)?.[0] || '';
+  if (source.includes('.solve(') && !intro.includes('CaptchaClient.solve()')) {
+    throw new Error(`${path} intro must name CaptchaClient.solve().`);
+  }
+  if (source.includes('.getBalance(') && !intro.includes('CaptchaClient.getBalance()')) {
+    throw new Error(`${path} intro must name CaptchaClient.getBalance().`);
   }
 }
 

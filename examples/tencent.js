@@ -168,15 +168,15 @@ export function main() {
       })
       .then((page) => solveCaptcha(page))
       .then((message) => console.log(`Page confirmation: ${message}`))
-      // STEP-08: Report errors and always close Chromium.
-      .catch((error) => {
-        console.error('Example failed:', error.message);
-        process.exitCode = 1;
-      })
+      // STEP-08: Always close Chromium and let callers handle failures.
       .finally(() => browser?.close())
   );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  // Report errors and set a nonzero exit code when this file runs directly.
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

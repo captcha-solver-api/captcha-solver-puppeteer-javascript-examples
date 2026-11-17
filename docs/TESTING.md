@@ -6,13 +6,12 @@ Automated checks validated on November 17, 2026 with Node.js 22.12, Node.js 24, 
 
 - `npm run lint`: passed.
 - `npm run check`: passed (includes lint).
-- `npm test`: 11 browser integration tests passed.
-- `npm audit --package-lock-only`: reports four low-severity findings inherited
-  through `puppeteer-extra`; npm offers only a breaking downgrade as an automatic fix.
+- `npm test`: 12 browser integration tests passed.
+- `npm audit --package-lock-only`: passed with no known vulnerabilities.
 - Tests use a local page fixture and a local API stub. They do not spend API balance.
 - Browser fixtures use the same Puppeteer Extra stealth setup as the examples.
 - Covered flows: reCAPTCHA v2, reCAPTCHA v3 script parsing, embedded Turnstile,
-  reCAPTCHA Enterprise, Cloudflare Challenge and Tencent interception, Yandex
+  reCAPTCHA Enterprise, Cloudflare Challenge navigation/HTTP verification and Tencent interception, Yandex
   SmartCaptcha token injection, GeeTest v3/v4 submission, solution injection, and visible success
   verification.
 

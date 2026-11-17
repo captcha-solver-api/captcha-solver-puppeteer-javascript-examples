@@ -6,6 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 /**
  * This example solves GeeTest v4 without a proxy. It extracts captcha_id from the loader script,
  * creates Tasks.GeeTestProxyless, submits the complete returned solution, and verifies acceptance.
+ * It uses CaptchaClient.solve().
  *
  * To adapt it, change GEETEST_V4_TARGET_URL and inspect the target's initialization parameters,
  * solution submission, and success response. Solution integration is unique to every site.
@@ -21,6 +22,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 puppeteer.use(StealthPlugin());
 const DEFAULT_URL = 'https://example.com/page_with_geetest_v4';
+const solverTimeout = 300_000;
 
 /** Solve GeeTest v4 on an already opened page. */
 export function solveCaptcha(page, solver) {
@@ -70,7 +72,7 @@ export function solveCaptcha(page, solver) {
 export function main() {
   const solver = new CaptchaClient({
     clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
-    timeout: 300_000,
+    timeout: solverTimeout,
   });
   let browser;
   return puppeteer

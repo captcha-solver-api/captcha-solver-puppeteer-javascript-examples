@@ -4,6 +4,7 @@ import { CaptchaClient } from '@captcha-solver-api/javascript-sdk';
 /**
  * This example checks the current Captcha Solver account balance. It creates an SDK client,
  * requests the balance without creating a CAPTCHA task, and prints the returned amount.
+ * It uses CaptchaClient.getBalance().
  *
  * How it works:
  * STEP-01 - Create the SDK client.

@@ -29,6 +29,7 @@ puppeteer.use(StealthPlugin());
 const websiteURL =
   process.env.TURNSTILE_CHALLENGE_TARGET_URL || 'https://example.com/page_with_turnstile_challenge';
 const parameterCaptureTimeout = 30_000;
+const challengeNavigationTimeout = 60_000;
 const client = new CaptchaClient({
   clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
 });
@@ -129,14 +130,25 @@ export function solveCaptcha(page, solver = client) {
         // Token injection and submission are site-specific; adapt this step to the target page.
         // Call the exact callback registered by this challenge page.
         return (
-          page
-            .evaluate((token) => {
+          Promise.all([
+            page.waitForResponse(
+              (response) =>
+                response.request().isNavigationRequest() && response.frame() === page.mainFrame(),
+              { timeout: challengeNavigationTimeout },
+            ),
+            page.evaluate((token) => {
               if (typeof window.__turnstileCallback !== 'function') {
                 throw new Error('Turnstile callback was not found.');
               }
               window.__turnstileCallback(token);
-            }, solution.token)
-            .then(() => page.waitForSelector(successSelector, { visible: true }))
+            }, solution.token),
+          ])
+            .then(([response]) => {
+              if (!response.ok()) {
+                throw new Error(`Challenge navigation returned HTTP ${response.status()}.`);
+              }
+              return page.waitForSelector(successSelector, { visible: true });
+            })
             // STEP-06: Require a fresh cookie as well as the page confirmation.
             .then(() => page.cookies())
             .then((cookies) => {
@@ -168,15 +180,15 @@ export function main() {
       })
       .then((page) => solveCaptcha(page))
       .then((message) => console.log(`Page confirmation: ${message}`))
-      // STEP-07: Report errors and always close Chromium.
-      .catch((error) => {
-        console.error('Example failed:', error.message);
-        process.exitCode = 1;
-      })
+      // STEP-07: Always close Chromium and let callers handle failures.
       .finally(() => browser?.close())
   );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  // Report errors and set a nonzero exit code when this file runs directly.
+  main().catch((error) => {
+    console.error('Example failed:', error.message);
+    process.exitCode = 1;
+  });
 }

@@ -6,7 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 /**
  * This example solves reCAPTCHA v2 Enterprise without a proxy. It extracts the site key, creates
  * Tasks.RecaptchaV2EnterpriseProxyless, logs and injects the returned token, submits the form,
- * and requires an explicit page confirmation.
+ * and requires an explicit page confirmation. It uses CaptchaClient.solve().
  *
  * To use it on another page, change RECAPTCHA_ENTERPRISE_TARGET_URL and inspect its site key,
  * enterprise payload, token field, submission flow, and success indicator before adapting them.
