@@ -3,6 +3,17 @@ import { pathToFileURL } from 'node:url';
 
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
+
 /**
  * This example shows how to solve a coordinate CAPTCHA. It reads a local image, adds an
  * instruction describing which objects to select, sends the task to the service, and prints the
@@ -31,15 +42,13 @@ const task = new Tasks.CoordinatesTask({
 /** Create, solve, and print the coordinate task. */
 export function main() {
   return (
-    client
-      // STEP-03: Send the coordinate task and wait for the solver result.
-      .solve(task)
-      .then((solution) => {
-        // STEP-04: Print coordinates in the original image's x/y coordinate system.
-        console.log(solution.coordinates);
-        // Use browser automation to click the original image at each returned x/y coordinate.
-        return solution;
-      })
+    // STEP-03: Send the coordinate task and wait for the solver result.
+    solveAndLogTaskId(client, task).then((solution) => {
+      // STEP-04: Print coordinates in the original image's x/y coordinate system.
+      console.log(solution.coordinates);
+      // Use browser automation to click the original image at each returned x/y coordinate.
+      return solution;
+    })
   );
 }
 

@@ -3,6 +3,17 @@ import { pathToFileURL } from 'node:url';
 
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
+
 /**
  * This example shows how to solve an image-to-text CAPTCHA. It reads a local CAPTCHA image,
  * describes the expected answer format, sends the task to the service, and prints the recognized
@@ -32,14 +43,12 @@ const task = new Tasks.ImageToText({
 /** Solve the image task and print its recognized text. */
 export function main() {
   return (
-    client
-      // STEP-03: Send the image-to-text task and wait for the solver result.
-      .solve(task)
-      .then((solution) => {
-        // STEP-04: Print the recognized text returned in solution.text.
-        console.log(solution.text);
-        return solution;
-      })
+    // STEP-03: Send the image-to-text task and wait for the solver result.
+    solveAndLogTaskId(client, task).then((solution) => {
+      // STEP-04: Print the recognized text returned in solution.text.
+      console.log(solution.text);
+      return solution;
+    })
   );
 }
 

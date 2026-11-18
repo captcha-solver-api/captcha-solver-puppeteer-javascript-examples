@@ -80,12 +80,14 @@ background. They launch Chrome through `puppeteer-extra` with `puppeteer-extra-p
 which reduces common automation fingerprints. Stealth is not a substitute for permission to
 automate a website.
 
-Browser examples log the solver result and then separately verify page acceptance. Receiving a
-solution from the SDK proves only that the service completed the task; it does not prove that the
-target page accepted the result. When a page exposes only a callback-delivery signal, the example
-states that narrower boundary instead of claiming server-side acceptance. Image and balance
-examples print their applicable SDK result without inventing a browser acceptance step. Image
-bodies are never printed, and API keys must remain in `.env`.
+Task examples log the ID returned by the SDK when the task is created, followed by the solver
+result. Browser examples then separately verify page acceptance. Receiving a solution from the SDK
+proves only that the service completed the task; it does not prove that the target page accepted
+the result. When a page exposes only a callback-delivery signal, the example states that narrower
+boundary instead of claiming server-side acceptance. Image and balance examples print their
+applicable SDK result without inventing a browser acceptance step. The balance example does not
+create a task and therefore has no task ID. Image bodies are never printed, and API keys must
+remain in `.env`.
 
 Token injection and submission are site-specific. The included browser code demonstrates one
 target's flow; for another target, you must inspect the page and determine the correct response

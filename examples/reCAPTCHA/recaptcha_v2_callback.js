@@ -3,6 +3,17 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
+
 /**
  * Solve reCAPTCHA v2 and pass the token to a callback whose name is known. This standalone
  * example uses Tasks.RecaptchaV2Proxyless and CaptchaClient.solve(). Callback delivery is the
@@ -44,7 +55,8 @@ export function solveCaptcha(page, solver = client) {
         page
           .evaluate(() => navigator.userAgent)
           .then((userAgent) =>
-            solver.solve(
+            solveAndLogTaskId(
+              solver,
               new Tasks.RecaptchaV2Proxyless({ websiteURL: page.url(), ...captcha, userAgent }),
             ),
           ),

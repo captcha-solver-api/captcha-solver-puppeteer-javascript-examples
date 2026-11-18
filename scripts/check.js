@@ -40,6 +40,7 @@ for await (const path of javascriptFiles('examples')) {
   }
 
   const allowedConsoleOutput = [
+    /console\.log\('Task ID:', taskId\);/,
     /console\.log\('Solution:', solution\);/,
     /console\.log\('Page confirmation:', message\)/,
     /console\.log\(`Page confirmation: \$\{message\}`\)/,
@@ -105,7 +106,7 @@ for await (const path of javascriptFiles('examples')) {
     }
   }
 
-  const intro = source.match(/\/\*\*[\s\S]*?\*\//)?.[0] || '';
+  const intro = source.match(/\/\*\*[\s\S]*?How it works:[\s\S]*?\*\//)?.[0] || '';
   const normalizedIntro = intro.replace(/\s+/g, ' ').replace(/\* /g, '');
   if (source.includes('.solve(') && !intro.includes('CaptchaClient.solve()')) {
     throw new Error(`${path} intro must name CaptchaClient.solve().`);
