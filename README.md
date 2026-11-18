@@ -87,6 +87,10 @@ states that narrower boundary instead of claiming server-side acceptance. Image 
 examples print their applicable SDK result without inventing a browser acceptance step. Image
 bodies are never printed, and API keys must remain in `.env`.
 
+Token injection and submission are site-specific. The included browser code demonstrates one
+target's flow; for another target, you must inspect the page and determine the correct response
+field, callback, submission action, and acceptance signal yourself.
+
 Tencent confirms that the intercepted page callback received the same ticket and random string.
 This proves callback delivery, not server-side acceptance; add a target-specific acceptance check
 when the page exposes one.
@@ -121,18 +125,43 @@ also copying hidden project helpers.
 | Balance                          | [`balance.js`](examples/balance.js)                                                   | `npm run balance`                     |
 
 The folders group examples by CAPTCHA family. Each file remains standalone and includes its own
-SDK setup, task creation, solution handling, browser integration, and applicable acceptance check.
-The two proxy examples use the same proxy settings for Chromium and `Tasks.RecaptchaV2`; this is
-required because the browser and solver must present the same network identity.
+SDK setup, task creation, solution handling, and applicable result check. Browser examples also
+include browser setup, solution delivery, and an acceptance or callback-delivery check. SDK-only
+image, coordinate, and balance examples print the result relevant to their task.
 
-The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos by default. Browser
-targets can be configured with `RECAPTCHA_V2_TARGET_URL`, `RECAPTCHA_ENTERPRISE_TARGET_URL`,
+### Target configuration
+
+The standard reCAPTCHA v2 form example and Yandex SmartCaptcha example use official provider demos
+by default. The named-callback and discovered-callback reCAPTCHA examples require a page that
+actually exposes the corresponding callback flow. Set `RECAPTCHA_V2_TARGET_URL` to a compatible
+page you own or are authorized to test; for the named-callback variants, also set
+`RECAPTCHA_V2_CALLBACK` to the page's callback name.
+
+Other browser targets can be configured with `RECAPTCHA_ENTERPRISE_TARGET_URL`,
 `RECAPTCHA_V3_TARGET_URL`, `TURNSTILE_TARGET_URL`, `TURNSTILE_CHALLENGE_TARGET_URL`,
 `TENCENT_TARGET_URL`, `YANDEX_TARGET_URL`, `GEETEST_V3_TARGET_URL`, and
-`GEETEST_V4_TARGET_URL`. The `example.com/page_with_...` values are placeholders, not working
-CAPTCHA demos. Replace them with pages you own or are authorized to test. For Tencent, set
-`TENCENT_SCRIPT_URL` if the script URL cannot be captured from the page. Changing a URL does not
+`GEETEST_V4_TARGET_URL`. The `example.com/page_with_...` values in `.env.example` are placeholders,
+not working CAPTCHA demos. Replace them before running those examples. Changing a URL does not
 automatically adapt selectors, callbacks, submission, or acceptance checks to a different page.
+
+For Tencent, set `TENCENT_SCRIPT_URL` only when the example cannot capture the script URL from the
+page.
+
+### Proxy configuration
+
+The two proxy examples require `PROXY_ADDRESS` and `PROXY_PORT`. `PROXY_TYPE` defaults to `http`;
+set `PROXY_LOGIN` and `PROXY_PASSWORD` when the proxy requires authentication:
+
+```dotenv
+PROXY_TYPE=http
+PROXY_ADDRESS=127.0.0.1
+PROXY_PORT=8080
+PROXY_LOGIN=
+PROXY_PASSWORD=
+```
+
+Both proxy examples send the same proxy settings to Chromium and `Tasks.RecaptchaV2` so the
+browser and solver present the same network identity.
 
 > [!IMPORTANT]
 > CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and
@@ -148,7 +177,7 @@ npm test
 ```
 
 `npm run check` runs linting, formatting, syntax and workflow-guide validation, and the complete
-local browser regression suite. These checks use local fixtures and do not create paid tasks.
+local regression suite. These checks use local fixtures and do not create paid tasks.
 
 `npm start` runs the Turnstile Challenge example. To run one explicitly authorized live attempt,
 pass an example name to the live runner:
@@ -157,9 +186,10 @@ pass an example name to the live runner:
 npm run test:live -- recaptcha-v2
 ```
 
-Running `npm run test:live` without an example name runs one attempt for every configured example
-except Tencent and can create multiple paid tasks. Tencent must be selected explicitly with
-`npm run test:live -- tencent`.
+Running `npm run test:live` without an example name attempts every example command except Tencent
+and can create multiple paid tasks. Some examples also require target, callback, or proxy settings
+described above. Prefer selecting one example explicitly. Tencent is never included in the default
+set and must be selected with `npm run test:live -- tencent`.
 
 `examples/normal_captcha/image_to_text.js` reads a local sample image and sends its base64
 contents through the SDK.
