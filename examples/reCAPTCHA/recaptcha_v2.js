@@ -3,17 +3,6 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-/** Solve a task with the SDK and log the task ID returned by createTask(). */
-function solveAndLogTaskId(solver, task) {
-  const loggingSolver = Object.create(solver);
-  loggingSolver.createTask = (...args) =>
-    solver.createTask(...args).then((taskId) => {
-      console.log('Task ID:', taskId);
-      return taskId;
-    });
-  return loggingSolver.solve(task);
-}
-
 /**
  * This example shows how to solve Google reCAPTCHA v2 without using a proxy. It opens the demo
  * page, extracts the site key and widget options, sends the task to the service, inserts the
@@ -35,6 +24,17 @@ function solveAndLogTaskId(solver, task) {
  */
 
 puppeteer.use(StealthPlugin());
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
 
 // STEP-01: Read the target URL and create the SDK client.
 const websiteURL =

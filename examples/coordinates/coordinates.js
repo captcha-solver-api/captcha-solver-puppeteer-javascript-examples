@@ -3,17 +3,6 @@ import { pathToFileURL } from 'node:url';
 
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 
-/** Solve a task with the SDK and log the task ID returned by createTask(). */
-function solveAndLogTaskId(solver, task) {
-  const loggingSolver = Object.create(solver);
-  loggingSolver.createTask = (...args) =>
-    solver.createTask(...args).then((taskId) => {
-      console.log('Task ID:', taskId);
-      return taskId;
-    });
-  return loggingSolver.solve(task);
-}
-
 /**
  * This example shows how to solve a coordinate CAPTCHA. It reads a local image, adds an
  * instruction describing which objects to select, sends the task to the service, and prints the
@@ -25,6 +14,17 @@ function solveAndLogTaskId(solver, task) {
  * STEP-03 - Send the task and wait for the solver result.
  * STEP-04 - Print the click coordinates or report an error.
  */
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
 
 // STEP-01: Create the SDK client with the API key from CAPTCHA_API_KEY.
 const client = new CaptchaClient({

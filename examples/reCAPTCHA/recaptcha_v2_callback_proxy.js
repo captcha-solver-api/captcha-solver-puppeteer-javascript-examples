@@ -3,17 +3,6 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-/** Solve a task with the SDK and log the task ID returned by createTask(). */
-function solveAndLogTaskId(solver, task) {
-  const loggingSolver = Object.create(solver);
-  loggingSolver.createTask = (...args) =>
-    solver.createTask(...args).then((taskId) => {
-      console.log('Task ID:', taskId);
-      return taskId;
-    });
-  return loggingSolver.solve(task);
-}
-
 /**
  * Solve callback-based reCAPTCHA v2 through the same proxy in Chromium and the API. It uses
  * Tasks.RecaptchaV2 and CaptchaClient.solve(). Callback delivery is verified, but does not by
@@ -32,6 +21,17 @@ function solveAndLogTaskId(solver, task) {
  */
 
 puppeteer.use(StealthPlugin());
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
 const websiteURL =
   process.env.RECAPTCHA_V2_TARGET_URL || 'https://www.google.com/recaptcha/api2/demo';
 const client = new CaptchaClient({ clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY' });

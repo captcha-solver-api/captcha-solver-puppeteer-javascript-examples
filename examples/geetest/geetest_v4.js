@@ -3,17 +3,6 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-/** Solve a task with the SDK and log the task ID returned by createTask(). */
-function solveAndLogTaskId(solver, task) {
-  const loggingSolver = Object.create(solver);
-  loggingSolver.createTask = (...args) =>
-    solver.createTask(...args).then((taskId) => {
-      console.log('Task ID:', taskId);
-      return taskId;
-    });
-  return loggingSolver.solve(task);
-}
-
 /**
  * This example solves GeeTest v4 without a proxy. It extracts captcha_id from the loader script,
  * creates Tasks.GeeTestProxyless, submits the complete returned solution, and verifies acceptance.
@@ -32,6 +21,17 @@ function solveAndLogTaskId(solver, task) {
  */
 
 puppeteer.use(StealthPlugin());
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
 const DEFAULT_URL = 'https://example.com/page_with_geetest_v4';
 const solverTimeout = 300_000;
 

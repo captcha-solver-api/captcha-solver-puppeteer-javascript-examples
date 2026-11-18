@@ -3,17 +3,6 @@ import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-/** Solve a task with the SDK and log the task ID returned by createTask(). */
-function solveAndLogTaskId(solver, task) {
-  const loggingSolver = Object.create(solver);
-  loggingSolver.createTask = (...args) =>
-    solver.createTask(...args).then((taskId) => {
-      console.log('Task ID:', taskId);
-      return taskId;
-    });
-  return loggingSolver.solve(task);
-}
-
 /**
  * This example solves reCAPTCHA v2 Enterprise without a proxy. It extracts the site key, creates
  * Tasks.RecaptchaV2EnterpriseProxyless, logs and injects the returned token, submits the form,
@@ -34,6 +23,17 @@ function solveAndLogTaskId(solver, task) {
  */
 
 puppeteer.use(StealthPlugin());
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
 const DEFAULT_URL = 'https://example.com/page_with_recaptcha_v2_enterprise';
 const submitSelector = 'button[type="submit"]';
 const successSelector = 'p[class*="successMessage"]';

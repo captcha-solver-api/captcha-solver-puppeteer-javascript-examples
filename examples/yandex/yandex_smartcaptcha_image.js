@@ -2,17 +2,6 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 
-/** Solve a task with the SDK and log the task ID returned by createTask(). */
-function solveAndLogTaskId(solver, task) {
-  const loggingSolver = Object.create(solver);
-  loggingSolver.createTask = (...args) =>
-    solver.createTask(...args).then((taskId) => {
-      console.log('Task ID:', taskId);
-      return taskId;
-    });
-  return loggingSolver.solve(task);
-}
-
 /**
  * This example solves the image-selection stage of Yandex SmartCaptcha. It reads the challenge
  * and instruction images, creates Tasks.YandexSmartCaptchaImageTask, sends it through
@@ -27,6 +16,17 @@ function solveAndLogTaskId(solver, task) {
  * STEP-03 - Create and send the Yandex SmartCaptcha image task.
  * STEP-04 - Print the returned coordinates or report an error.
  */
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
 
 /**
  * Read both sample images, solve the Yandex image task, and print its result.
