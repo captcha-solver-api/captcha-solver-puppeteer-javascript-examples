@@ -1,3 +1,3 @@
-import { main } from './examples/turnstile-challenge.js';
+import { main } from './examples/cloudflare/turnstile_challenge.js';
 
 main();

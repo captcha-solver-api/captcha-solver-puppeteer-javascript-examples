@@ -32,8 +32,8 @@ export function main(solver) {
 
   // STEP-02: Read both images without printing their base64 contents.
   return Promise.all([
-    readFile(new URL('../assets/yandex-smartcaptcha-main.png', import.meta.url)),
-    readFile(new URL('../assets/yandex-smartcaptcha-task.png', import.meta.url)),
+    readFile(new URL('../../assets/yandex-smartcaptcha-main.png', import.meta.url)),
+    readFile(new URL('../../assets/yandex-smartcaptcha-task.png', import.meta.url)),
   ])
     .then(([body, instructions]) => {
       // STEP-03: Create and send the dedicated Yandex SmartCaptcha image task.

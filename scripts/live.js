@@ -1,5 +1,4 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { basename } from 'node:path';
 
 /** Remove locally configured credentials from live-test output. */
 function redact(value) {
@@ -14,9 +13,9 @@ const { scripts } = JSON.parse(await readFile(new URL('../package.json', import.
 const paths = Object.fromEntries(
   Object.entries(scripts)
     .filter(([, command]) => command.includes(' examples/'))
-    .map(([, command]) => {
+    .map(([name, command]) => {
       const path = command.split(' ').at(-1);
-      return [basename(path, '.js'), path];
+      return [name, path];
     }),
 );
 const allowed = Object.keys(paths);

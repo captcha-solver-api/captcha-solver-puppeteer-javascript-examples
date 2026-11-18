@@ -5,15 +5,19 @@ import { before, after, test } from 'node:test';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { CaptchaClient } from '@captcha-solver-api/javascript-sdk';
-import { solveCaptcha as v2 } from '../examples/recaptcha-v2.js';
-import { solveCaptcha as enterprise } from '../examples/recaptcha-v2-enterprise.js';
-import { solveCaptcha as v3 } from '../examples/recaptcha-v3.js';
-import { solveCaptcha as turnstile } from '../examples/turnstile.js';
-import { solveCaptcha as challenge } from '../examples/turnstile-challenge.js';
-import { solveCaptcha as tencent } from '../examples/tencent.js';
-import { solveCaptcha as yandex } from '../examples/yandex-smartcaptcha.js';
-import { solveCaptcha as geetestV3 } from '../examples/geetest-v3.js';
-import { solveCaptcha as geetestV4 } from '../examples/geetest-v4.js';
+import { solveCaptcha as v2 } from '../examples/reCAPTCHA/recaptcha_v2.js';
+import { solveCaptcha as v2Callback } from '../examples/reCAPTCHA/recaptcha_v2_callback.js';
+import { solveCaptcha as v2CallbackAuto } from '../examples/reCAPTCHA/recaptcha_v2_callback_auto.js';
+import { solveCaptcha as v2Proxy } from '../examples/reCAPTCHA/recaptcha_v2_proxy.js';
+import { solveCaptcha as v2CallbackProxy } from '../examples/reCAPTCHA/recaptcha_v2_callback_proxy.js';
+import { solveCaptcha as enterprise } from '../examples/reCAPTCHA/recaptcha_v2_enterprise.js';
+import { solveCaptcha as v3 } from '../examples/reCAPTCHA/recaptcha_v3.js';
+import { solveCaptcha as turnstile } from '../examples/cloudflare/turnstile.js';
+import { solveCaptcha as challenge } from '../examples/cloudflare/turnstile_challenge.js';
+import { solveCaptcha as tencent } from '../examples/tencent/tencent.js';
+import { solveCaptcha as yandex } from '../examples/yandex/yandex_smartcaptcha.js';
+import { solveCaptcha as geetestV3 } from '../examples/geetest/geetest_v3.js';
+import { solveCaptcha as geetestV4 } from '../examples/geetest/geetest_v4.js';
 
 puppeteer.use(StealthPlugin());
 
@@ -32,6 +36,9 @@ const fixtures = {
     <script>document.querySelector('button').onclick = () => {
       if (document.querySelector('textarea').value === 'fixture-token') accept();
     };</script>`,
+  '/v2-callback': `<div data-sitekey="fixture-key" data-callback="verifyDemoRecaptcha"></div><script>
+    window.verifyDemoRecaptcha = token => { if (token === 'fixture-token') accept(); };
+    </script>`,
   '/v3': `${button}<script>
     window.verifyRecaptcha = token => { if (token === 'fixture-token') accept(); };
     window.grecaptcha = { ready: fn => fn(), execute: () => Promise.resolve('browser-token') };
@@ -207,7 +214,7 @@ async function run(path, solveCaptcha, ...options) {
     const message = await solveCaptcha(page, solver, ...options);
     assert.match(
       message,
-      /Demo accepted|Hello, user!|Tencent callback received|challenge cleared and target page loaded/,
+      /Demo accepted|callback received|Hello, user!|Tencent callback received|challenge cleared and target page loaded/,
     );
     if (submitted) assert.match(receivedHeader, /^javascript-sdk\//);
     return {
@@ -224,6 +231,25 @@ test('v2 sends a real SDK request and submits the returned token', async () => {
   const { task } = await run('/v2', v2);
   assert.equal(task.type, 'RecaptchaV2TaskProxyless');
   assert.equal(task.websiteKey, 'fixture-key');
+});
+test('v2 known-callback example delivers the returned token', async () => {
+  const { task } = await run('/v2-callback', v2Callback);
+  assert.equal(task.type, 'RecaptchaV2TaskProxyless');
+});
+test('v2 callback-discovery example finds and invokes the widget callback', async () => {
+  const { task } = await run('/v2-callback', v2CallbackAuto);
+  assert.equal(task.type, 'RecaptchaV2TaskProxyless');
+});
+test('v2 proxy example creates a proxy task and submits the token', async () => {
+  const proxy = { proxyType: 'http', proxyAddress: '127.0.0.1', proxyPort: 8080 };
+  const { task } = await run('/v2', v2Proxy, proxy);
+  assert.equal(task.type, 'RecaptchaV2Task');
+  assert.equal(task.proxyAddress, '127.0.0.1');
+});
+test('v2 callback proxy example creates a proxy task and invokes the callback', async () => {
+  const proxy = { proxyType: 'http', proxyAddress: '127.0.0.1', proxyPort: 8080 };
+  const { task } = await run('/v2-callback', v2CallbackProxy, proxy);
+  assert.equal(task.type, 'RecaptchaV2Task');
 });
 test('Enterprise v2 creates the Enterprise task and verifies acceptance', async () => {
   process.env.RECAPTCHA_ENTERPRISE_TARGET_URL = `${baseUrl}/v2`;

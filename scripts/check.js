@@ -1,6 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { basename } from 'node:path';
 
 /** Recursively yield JavaScript source files from a directory. */
 async function* javascriptFiles(directory) {
@@ -116,10 +115,9 @@ for await (const path of javascriptFiles('examples')) {
 const packageJSON = JSON.parse(await readFile('package.json', 'utf8'));
 const readme = await readFile('README.md', 'utf8');
 for (const path of examplePaths) {
-  const name = basename(path, '.js');
   const hasScript = Object.values(packageJSON.scripts).some((command) => command.endsWith(path));
   if (!hasScript) throw new Error(`${path} has no npm run command.`);
-  if (!readme.includes(`(examples/${name}.js)`)) {
+  if (!readme.includes(`(${path})`)) {
     throw new Error(`${path} is missing from the README example table.`);
   }
 }

@@ -23,7 +23,7 @@ const lettersOnly = 2;
 
 // STEP-02: Load the sample image and describe the expected answer format.
 const task = new Tasks.ImageToText({
-  body: readFileSync(new URL('../assets/text-captcha.png', import.meta.url)).toString('base64'),
+  body: readFileSync(new URL('../../assets/text-captcha.png', import.meta.url)).toString('base64'),
   numeric: lettersOnly,
   minLength: 4,
   maxLength: 6,

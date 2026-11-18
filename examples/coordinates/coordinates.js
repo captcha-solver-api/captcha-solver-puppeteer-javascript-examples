@@ -22,7 +22,7 @@ const client = new CaptchaClient({
 
 // STEP-02: Read the image and create the task with a base64 body and click instruction.
 const task = new Tasks.CoordinatesTask({
-  body: readFileSync(new URL('../assets/coordinates-captcha.png', import.meta.url)).toString(
+  body: readFileSync(new URL('../../assets/coordinates-captcha.png', import.meta.url)).toString(
     'base64',
   ),
   comment: 'Click on all squares with street signs',

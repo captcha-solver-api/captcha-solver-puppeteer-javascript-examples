@@ -57,6 +57,10 @@ The npm example commands load this file through Node.js `--env-file-if-exists=.e
 
 ```bash
 npm run recaptcha-v2
+npm run recaptcha-v2-callback
+npm run recaptcha-v2-callback-auto
+npm run recaptcha-v2-proxy
+npm run recaptcha-v2-callback-proxy
 npm run recaptcha-v2-enterprise
 npm run recaptcha-v3
 npm run turnstile
@@ -96,21 +100,30 @@ also copying hidden project helpers.
 
 ## Examples
 
-| Captcha                 | File                                                                    | Command                           |
-| ----------------------- | ----------------------------------------------------------------------- | --------------------------------- |
-| reCAPTCHA v2            | [`recaptcha-v2.js`](examples/recaptcha-v2.js)                           | `npm run recaptcha-v2`            |
-| reCAPTCHA v2 Enterprise | [`recaptcha-v2-enterprise.js`](examples/recaptcha-v2-enterprise.js)     | `npm run recaptcha-v2-enterprise` |
-| reCAPTCHA v3            | [`recaptcha-v3.js`](examples/recaptcha-v3.js)                           | `npm run recaptcha-v3`            |
-| Cloudflare Turnstile    | [`turnstile.js`](examples/turnstile.js)                                 | `npm run turnstile`               |
-| Cloudflare Challenge    | [`turnstile-challenge.js`](examples/turnstile-challenge.js)             | `npm run turnstile-challenge`     |
-| Tencent CAPTCHA         | [`tencent.js`](examples/tencent.js)                                     | `npm run tencent`                 |
-| Yandex SmartCaptcha     | [`yandex-smartcaptcha.js`](examples/yandex-smartcaptcha.js)             | `npm run yandex`                  |
-| Yandex image challenge  | [`yandex-smartcaptcha-image.js`](examples/yandex-smartcaptcha-image.js) | `npm run yandex-image`            |
-| GeeTest v3              | [`geetest-v3.js`](examples/geetest-v3.js)                               | `npm run geetest-v3`              |
-| GeeTest v4              | [`geetest-v4.js`](examples/geetest-v4.js)                               | `npm run geetest-v4`              |
-| Image-to-text           | [`image-to-text.js`](examples/image-to-text.js)                         | `npm run image-to-text`           |
-| Coordinates             | [`coordinates.js`](examples/coordinates.js)                             | `npm run coordinates`             |
-| Balance                 | [`balance.js`](examples/balance.js)                                     | `npm run balance`                 |
+| Captcha                          | File                                                                                  | Command                               |
+| -------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |
+| reCAPTCHA v2 form                | [`recaptcha_v2.js`](examples/reCAPTCHA/recaptcha_v2.js)                               | `npm run recaptcha-v2`                |
+| reCAPTCHA v2 named callback      | [`recaptcha_v2_callback.js`](examples/reCAPTCHA/recaptcha_v2_callback.js)             | `npm run recaptcha-v2-callback`       |
+| reCAPTCHA v2 discovered callback | [`recaptcha_v2_callback_auto.js`](examples/reCAPTCHA/recaptcha_v2_callback_auto.js)   | `npm run recaptcha-v2-callback-auto`  |
+| reCAPTCHA v2 with proxy          | [`recaptcha_v2_proxy.js`](examples/reCAPTCHA/recaptcha_v2_proxy.js)                   | `npm run recaptcha-v2-proxy`          |
+| reCAPTCHA v2 callback + proxy    | [`recaptcha_v2_callback_proxy.js`](examples/reCAPTCHA/recaptcha_v2_callback_proxy.js) | `npm run recaptcha-v2-callback-proxy` |
+| reCAPTCHA v2 Enterprise          | [`recaptcha_v2_enterprise.js`](examples/reCAPTCHA/recaptcha_v2_enterprise.js)         | `npm run recaptcha-v2-enterprise`     |
+| reCAPTCHA v3                     | [`recaptcha_v3.js`](examples/reCAPTCHA/recaptcha_v3.js)                               | `npm run recaptcha-v3`                |
+| Cloudflare Turnstile             | [`turnstile.js`](examples/cloudflare/turnstile.js)                                    | `npm run turnstile`                   |
+| Cloudflare Challenge             | [`turnstile_challenge.js`](examples/cloudflare/turnstile_challenge.js)                | `npm run turnstile-challenge`         |
+| Tencent CAPTCHA                  | [`tencent.js`](examples/tencent/tencent.js)                                           | `npm run tencent`                     |
+| Yandex SmartCaptcha              | [`yandex_smartcaptcha.js`](examples/yandex/yandex_smartcaptcha.js)                    | `npm run yandex`                      |
+| Yandex image challenge           | [`yandex_smartcaptcha_image.js`](examples/yandex/yandex_smartcaptcha_image.js)        | `npm run yandex-image`                |
+| GeeTest v3                       | [`geetest_v3.js`](examples/geetest/geetest_v3.js)                                     | `npm run geetest-v3`                  |
+| GeeTest v4                       | [`geetest_v4.js`](examples/geetest/geetest_v4.js)                                     | `npm run geetest-v4`                  |
+| Image-to-text                    | [`image_to_text.js`](examples/normal_captcha/image_to_text.js)                        | `npm run image-to-text`               |
+| Coordinates                      | [`coordinates.js`](examples/coordinates/coordinates.js)                               | `npm run coordinates`                 |
+| Balance                          | [`balance.js`](examples/balance.js)                                                   | `npm run balance`                     |
+
+The folders group examples by CAPTCHA family. Each file remains standalone and includes its own
+SDK setup, task creation, solution handling, browser integration, and applicable acceptance check.
+The two proxy examples use the same proxy settings for Chromium and `Tasks.RecaptchaV2`; this is
+required because the browser and solver must present the same network identity.
 
 The reCAPTCHA v2 and Yandex SmartCaptcha examples use official provider demos by default. Browser
 targets can be configured with `RECAPTCHA_V2_TARGET_URL`, `RECAPTCHA_ENTERPRISE_TARGET_URL`,
@@ -148,7 +161,8 @@ Running `npm run test:live` without an example name runs one attempt for every c
 except Tencent and can create multiple paid tasks. Tencent must be selected explicitly with
 `npm run test:live -- tencent`.
 
-`image-to-text.js` reads a local sample image and sends its base64 contents through the SDK.
+`examples/normal_captcha/image_to_text.js` reads a local sample image and sends its base64
+contents through the SDK.
 
 ## Useful links
 

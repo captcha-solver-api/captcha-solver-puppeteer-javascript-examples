@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CaptchaClient } from '@captcha-solver-api/javascript-sdk';
-import { main } from '../examples/yandex-smartcaptcha-image.js';
+import { main } from '../examples/yandex/yandex_smartcaptcha_image.js';
 
 test('Yandex image example sends the dedicated SmartCaptchaTask', async (context) => {
   const originalFetch = globalThis.fetch;
