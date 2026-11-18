@@ -7,14 +7,17 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * Solve reCAPTCHA v2 when the callback name is unknown. The example discovers the callback in
  * the widget or reCAPTCHA client configuration, then uses Tasks.RecaptchaV2Proxyless and
  * CaptchaClient.solve(). Callback delivery is verified separately from the solver result.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Configure the SDK client and target.
- * STEP-02 - Open the page and discover the widget callback.
- * STEP-03 - Create and solve a proxyless task.
- * STEP-04 - Log the solution and invoke the discovered callback.
- * STEP-05 - Confirm that the callback received the token.
- * STEP-06 - Handle errors and close Chromium.
+ * STEP-02 - Launch Chromium and open the target page.
+ * STEP-03 - Extract the reCAPTCHA parameters and discover the widget callback.
+ * STEP-04 - Create the task and wait for the solver result.
+ * STEP-05 - Log the solution and invoke the discovered callback.
+ * STEP-06 - Confirm that the callback received the token.
+ * STEP-07 - Handle errors and close Chromium.
  */
 
 puppeteer.use(StealthPlugin());
@@ -44,19 +47,20 @@ function discoverCaptcha(page) {
 
 /** Solve reCAPTCHA v2 and invoke its automatically discovered callback. */
 export function solveCaptcha(page, solver = client) {
-  // STEP-02: Open the page and discover its callback.
+  // STEP-02: Open the target page in the launched Chromium instance.
   return (
     page
       .goto(process.env.RECAPTCHA_V2_TARGET_URL || websiteURL, { waitUntil: 'domcontentloaded' })
+      // STEP-03: Extract the widget parameters and discover its callback.
       .then(() => Promise.all([discoverCaptcha(page), page.evaluate(() => navigator.userAgent)]))
-      // STEP-03: Create and solve the task.
+      // STEP-04: Create the task and wait for the solver result.
       .then(([captcha, userAgent]) =>
         solver.solve(
           new Tasks.RecaptchaV2Proxyless({ websiteURL: page.url(), ...captcha, userAgent }),
         ),
       )
       .then((solution) => {
-        // STEP-04: Token injection and submission are site-specific; this page uses a callback.
+        // STEP-05: Token injection and submission are site-specific; this page uses a callback.
         console.log('Solution:', solution);
         if (!solution.gRecaptchaResponse)
           throw new Error('Captcha Solver returned an empty token.');
@@ -68,7 +72,7 @@ export function solveCaptcha(page, solver = client) {
           .then(() => solution.gRecaptchaResponse);
       })
       .then((token) =>
-        // STEP-05: Confirm callback delivery without claiming server-side acceptance.
+        // STEP-06: Confirm callback delivery without claiming server-side acceptance.
         page
           .waitForFunction((expected) => window.__captchaCallbackToken === expected, {}, token)
           .then(() => 'Discovered reCAPTCHA callback received the solver token.'),
@@ -88,7 +92,7 @@ export function main() {
       })
       .then((page) => solveCaptcha(page))
       .then((message) => console.log(`Page confirmation: ${message}`))
-      // STEP-06: Always close Chromium.
+      // STEP-07: Always close Chromium.
       .finally(() => browser?.close())
   );
 }

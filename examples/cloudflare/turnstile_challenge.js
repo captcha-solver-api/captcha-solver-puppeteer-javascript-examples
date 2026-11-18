@@ -12,6 +12,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * To use this example on another challenge page, change the target URL and verify the interception
  * logic, User-Agent, callback, success selector, and clearance requirements. Challenge behavior is
  * site-specific, so inspect and debug the page before adapting the solution application step.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Configure the target, timeout, and SDK client.

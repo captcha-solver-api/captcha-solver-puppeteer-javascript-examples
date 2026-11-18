@@ -20,6 +20,8 @@ for (const directory of ['examples', 'scripts', 'tests']) {
 }
 
 const examplePaths = [];
+const tokenApplicationNotice =
+  'You must inspect the target page and determine the correct way to pass the token yourself.';
 for await (const path of javascriptFiles('examples')) {
   examplePaths.push(path);
   const source = await readFile(path, 'utf8');
@@ -104,11 +106,18 @@ for await (const path of javascriptFiles('examples')) {
   }
 
   const intro = source.match(/\/\*\*[\s\S]*?\*\//)?.[0] || '';
+  const normalizedIntro = intro.replace(/\s+/g, ' ').replace(/\* /g, '');
   if (source.includes('.solve(') && !intro.includes('CaptchaClient.solve()')) {
     throw new Error(`${path} intro must name CaptchaClient.solve().`);
   }
   if (source.includes('.getBalance(') && !intro.includes('CaptchaClient.getBalance()')) {
     throw new Error(`${path} intro must name CaptchaClient.getBalance().`);
+  }
+  if (
+    (source.includes('solution.gRecaptchaResponse') || source.includes('solution.token')) &&
+    !normalizedIntro.includes(tokenApplicationNotice)
+  ) {
+    throw new Error(`${path} must tell users to determine the site-specific token flow.`);
   }
 }
 

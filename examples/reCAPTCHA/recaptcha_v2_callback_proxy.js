@@ -7,6 +7,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * Solve callback-based reCAPTCHA v2 through the same proxy in Chromium and the API. It uses
  * Tasks.RecaptchaV2 and CaptchaClient.solve(). Callback delivery is verified, but does not by
  * itself prove server-side acceptance.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Read proxy settings and configure the SDK client.

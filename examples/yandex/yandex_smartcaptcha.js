@@ -11,8 +11,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * proof that the page accepted the solution.
  *
  * To use this example on another page, change the target URL and verify the site key. Token fields,
- * callbacks, submission, and success indicators are site-specific, so inspect and debug the page
- * before applying the token.
+ * callbacks, submission, and success indicators are site-specific. You must inspect the target
+ * page and determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Configure the target and create the SDK client.

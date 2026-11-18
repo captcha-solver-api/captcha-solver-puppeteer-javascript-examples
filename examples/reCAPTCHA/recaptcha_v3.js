@@ -12,6 +12,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * To use this example on another page, change the target URL and verify how the site key, action,
  * minimum score, callback, and acceptance signal are configured. Callback delivery alone does not
  * prove server-side acceptance.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Configure the target, task options, and SDK client.

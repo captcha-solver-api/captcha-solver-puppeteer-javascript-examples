@@ -10,7 +10,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  *
  * To use it on another page, change RECAPTCHA_ENTERPRISE_TARGET_URL and inspect its site key,
  * enterprise payload, token field, submission flow, and success indicator before adapting them.
- * Token integration is unique to every target site and must be investigated independently.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Open the configured target page.

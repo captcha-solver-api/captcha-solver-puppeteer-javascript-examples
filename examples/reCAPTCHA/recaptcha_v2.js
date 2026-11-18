@@ -10,8 +10,8 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
  * Tasks.RecaptchaV2Proxyless and CaptchaClient.solve().
  *
  * To use this example on another page, change the target URL and update the site-key selector.
- * Token fields, callbacks, form submission, and success indicators are site-specific, so inspect
- * and debug the target page before adapting the token application step.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
  *
  * How it works:
  * STEP-01 - Configure the target and create the SDK client.
