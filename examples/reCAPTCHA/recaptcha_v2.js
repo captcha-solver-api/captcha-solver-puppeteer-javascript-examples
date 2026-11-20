@@ -1,100 +1,139 @@
-/**
- * Solve reCAPTCHA v2 with Puppeteer and Captcha Solver.
- *
- * This example opens a page, reads the reCAPTCHA site key, sends a task through
- * the official SDK, puts the returned token into the form, submits it, and
- * waits for the page to confirm that the token was accepted.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
+/**
+ * This example shows how to solve Google reCAPTCHA v2 without using a proxy. It opens the demo
+ * page, extracts the site key and widget options, sends the task to the service, inserts the
+ * returned token into the form, and verifies that the page accepts it. It uses
+ * Tasks.RecaptchaV2Proxyless and CaptchaClient.solve().
+ *
+ * To use this example on another page, change the target URL and update the site-key selector.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
+ *
+ * How it works:
+ * STEP-01 - Configure the target and create the SDK client.
+ * STEP-02 - Launch Chromium and open the target page.
+ * STEP-03 - Extract the reCAPTCHA parameters from the page.
+ * STEP-04 - Create the task and wait for the solver result.
+ * STEP-05 - Log the solution and inject its token into the form.
+ * STEP-06 - Submit the form and verify that the page accepts the token.
+ * STEP-07 - Handle errors and close Chromium.
+ */
+
 puppeteer.use(StealthPlugin());
 
-const DEFAULT_URL = 'https://www.google.com/recaptcha/api2/demo';
-
-/**
- * Solve and submit reCAPTCHA v2 on an already opened page.
- * @param {import('puppeteer').Page} page Open Puppeteer page.
- * @param {CaptchaClient} solver Configured Captcha Solver client.
- * @returns {Promise<string>} Text displayed after successful submission.
- */
-export async function solveCaptcha(page, solver) {
-  console.log('1. Opening the page');
-  await page.goto(process.env.TARGET_URL || DEFAULT_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('[data-sitekey]');
-
-  console.log('2. Reading reCAPTCHA parameters from the page');
-  const captcha = await page.$eval('[data-sitekey]', (element) => ({
-    websiteKey: element.getAttribute('data-sitekey'),
-    isInvisible: element.getAttribute('data-size') === 'invisible',
-    recaptchaDataSValue: element.getAttribute('data-s') || undefined,
-  }));
-
-  const task = new Tasks.RecaptchaV2Proxyless({
-    websiteURL: page.url(),
-    ...captcha,
-    userAgent: await page.evaluate(() => navigator.userAgent),
-  });
-  console.log('3. Sending the task to Captcha Solver', task.toDict());
-  const solution = await solver.solve(task);
-  console.log('4. Solution received', solution);
-
-  if (!solution.gRecaptchaResponse) {
-    throw new Error('Captcha Solver returned an empty reCAPTCHA token.');
-  }
-
-  // Token injection and submission are site-specific; adapt this step to the target page.
-  console.log('5. Writing the token into g-recaptcha-response');
-  await page.evaluate((token) => {
-    let response = document.querySelector('[name="g-recaptcha-response"]');
-    if (!response) {
-      response = document.createElement('textarea');
-      response.name = 'g-recaptcha-response';
-      document.querySelector('form')?.append(response);
-    }
-    response.value = token;
-    response.dispatchEvent(new Event('input', { bubbles: true }));
-    response.dispatchEvent(new Event('change', { bubbles: true }));
-  }, solution.gRecaptchaResponse);
-
-  console.log('6. Submitting the form');
-  await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
-
-  console.log('7. Waiting for the page to accept the solution');
-  const successSelector = process.env.SUCCESS_SELECTOR || '.recaptcha-success, p[class*="successMessage"]';
-  await page.waitForSelector(successSelector, { visible: true });
-  return page.$eval(successSelector, (element) => element.textContent.trim());
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
 }
 
-/** Run the complete standalone example. */
-export async function main() {
-  const apiKey = process.env.CAPTCHA_API_KEY;
-  if (!apiKey || apiKey === 'your_api_key') {
-    throw new Error('Set CAPTCHA_API_KEY in .env or the environment.');
-  }
+// STEP-01: Read the target URL and create the SDK client.
+const websiteURL =
+  process.env.RECAPTCHA_V2_TARGET_URL || 'https://www.google.com/recaptcha/api2/demo';
+const client = new CaptchaClient({
+  clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
+});
 
-  console.log('Creating Captcha Solver client from CAPTCHA_API_KEY');
-  const solver = new CaptchaClient({ clientKey: apiKey });
-  const browser = await puppeteer.launch({
-    headless: process.env.HEADLESS === 'true',
-    executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
-    defaultViewport: { width: 1280, height: 900 },
-  });
+let browser;
 
-  try {
-    const page = await browser.newPage();
-    const result = await solveCaptcha(page, solver);
-    console.log('Captcha solved successfully:', result);
-  } finally {
-    await browser.close();
-  }
+/**
+ * Solve and submit reCAPTCHA v2 on an opened Puppeteer page.
+ * @param {import('puppeteer').Page} page Open Puppeteer page.
+ * @param {CaptchaClient} solver Configured Captcha Solver client.
+ * @returns {Promise<string>} Page text that confirms acceptance.
+ */
+export function solveCaptcha(page, solver = client) {
+  const siteKeySelector = '[data-sitekey]';
+  const submitSelector = 'button[type="submit"], input[type="submit"]';
+  const successSelector = '.recaptcha-success, p[class*="successMessage"]';
+
+  // STEP-02: Open the configured page containing reCAPTCHA v2.
+  return (
+    page
+      .goto(process.env.RECAPTCHA_V2_TARGET_URL || websiteURL, { waitUntil: 'domcontentloaded' })
+      .then(() => page.waitForSelector(siteKeySelector))
+      // STEP-03: Extract widget options and the browser User-Agent from the page.
+      .then(() =>
+        Promise.all([
+          page.$eval(siteKeySelector, (element) => ({
+            websiteKey: element.getAttribute('data-sitekey'),
+            isInvisible: element.getAttribute('data-size') === 'invisible',
+            recaptchaDataSValue: element.getAttribute('data-s') || undefined,
+          })),
+          page.evaluate(() => navigator.userAgent),
+        ]),
+      )
+      // STEP-04: Build the task and wait for the solver result.
+      .then(([captcha, userAgent]) => {
+        if (!captcha.websiteKey) throw new Error('reCAPTCHA site key not found.');
+        const task = new Tasks.RecaptchaV2Proxyless({
+          websiteURL: page.url(),
+          ...captcha,
+          userAgent,
+        });
+        return solveAndLogTaskId(solver, task);
+      })
+      // STEP-05: Log the solution and inject its token into the form.
+      .then((solution) => {
+        console.log('Solution:', solution);
+        if (!solution.gRecaptchaResponse) {
+          throw new Error('Captcha Solver returned an empty reCAPTCHA token.');
+        }
+
+        // Token injection and submission are site-specific; adapt this step to the target page.
+        // Put the token into the field that this form sends to its verification endpoint.
+        return page.evaluate((token) => {
+          let response = document.querySelector('[name="g-recaptcha-response"]');
+          if (!response) {
+            response = document.createElement('textarea');
+            response.name = 'g-recaptcha-response';
+            document.querySelector('form')?.append(response);
+          }
+          response.value = token;
+          response.dispatchEvent(new Event('input', { bubbles: true }));
+          response.dispatchEvent(new Event('change', { bubbles: true }));
+        }, solution.gRecaptchaResponse);
+      })
+      // STEP-06: Submit the form and require an explicit page confirmation.
+      .then(() => page.click(submitSelector))
+      .then(() => page.waitForSelector(successSelector, { visible: true }))
+      .then(() => page.$eval(successSelector, (element) => element.textContent.trim()))
+  );
+}
+
+/** Run the complete standalone reCAPTCHA v2 example. */
+export function main() {
+  // Launch Chromium and create a browser page.
+  return (
+    puppeteer
+      .launch({
+        headless: process.env.HEADLESS === 'true',
+        defaultViewport: { width: 1280, height: 900 },
+      })
+      .then((instance) => {
+        browser = instance;
+        return browser.newPage();
+      })
+      .then((page) => solveCaptcha(page))
+      .then((message) => console.log(`Page confirmation: ${message}`))
+      // STEP-07: Always close Chromium and let callers handle failures.
+      .finally(() => browser?.close())
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  // Report errors and set a nonzero exit code when this file runs directly.
   main().catch((error) => {
-    console.error('Example failed:', error.message);
+    console.error(error);
     process.exitCode = 1;
   });
 }

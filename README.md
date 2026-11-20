@@ -1,24 +1,30 @@
-![Captcha Solver Puppeteer JavaScript Examples](assets/puppeteer-javascript-examples-banner.png)
+# Captcha Solver Puppeteer JavaScript Examples
 
-# Captcha solving examples with JavaScript and Puppeteer
+![Captcha Solver Puppeteer JavaScript Examples](assets/puppeteer-javascript-examples-banner.png)
 
 Examples of solving popular captcha types with
 [`@captcha-solver-api/javascript-sdk`](https://www.npmjs.com/package/@captcha-solver-api/javascript-sdk)
 and [Puppeteer](https://pptr.dev/).
 
-Each example shows how to:
+Use the examples only on demo pages or websites you are authorized to test.
+
+> [!IMPORTANT]
+> Live examples create paid CAPTCHA tasks. Run them only with an API key you are authorized to use
+> and against a target you own or have explicit permission to test.
+
+Each browser example shows how to:
 
 1. Open a page and collect captcha parameters.
 2. Send a task to Captcha Solver.
 3. Apply the solution in the browser.
-4. Check that the page accepted the solution.
+4. Check the strongest acceptance signal exposed by the page and state its exact boundary.
 
 ## Installation
 
 Requirements:
 
 - Node.js 22.12 or newer
-- A Captcha Solver API key with a positive balance
+- A Captcha Solver API key with a positive balance for live examples
 
 ```bash
 git clone https://github.com/captcha-solver-api/captcha-solver-puppeteer-javascript-examples.git
@@ -41,80 +47,154 @@ Copy-Item .env.example .env
 Set your API key in `.env`:
 
 ```dotenv
-CAPTCHA_API_KEY=your_api_key
+CAPTCHA_API_KEY=your_captcha_solver_api_key
 ```
+
+The npm example commands load this file through Node.js `--env-file-if-exists=.env`; using
+`process.env` in source code does not load `.env` by itself.
 
 ## Run
 
 ```bash
-npm run example:recaptcha-v2
+npm run recaptcha-v2
+npm run recaptcha-v2-callback
+npm run recaptcha-v2-callback-auto
+npm run recaptcha-v2-proxy
+npm run recaptcha-v2-callback-proxy
+npm run recaptcha-v2-enterprise
+npm run recaptcha-v3
+npm run turnstile
+npm run turnstile-challenge
+npm run yandex
+npm run yandex-image
+npm run tencent
+npm run geetest-v3
+npm run geetest-v4
+npm run image-to-text
+npm run coordinates
+npm run balance
 ```
 
-Chrome opens in visible mode. Set `HEADLESS=true` in `.env` to run it in the
-background. Every example launches Chrome through `puppeteer-extra` with
-`puppeteer-extra-plugin-stealth`, which reduces common automation fingerprints.
-Stealth is not a substitute for permission to automate a website.
+Browser examples open Chrome in visible mode. Set `HEADLESS=true` in `.env` to run them in the
+background. They launch Chrome through `puppeteer-extra` with `puppeteer-extra-plugin-stealth`,
+which reduces common automation fingerprints. Stealth is not a substitute for permission to
+automate a website.
 
-Each run prints numbered steps, the CAPTCHA parameters sent to the API, the
-complete solution including its token, how the solution is applied, and the
-demo page's acceptance message. Image bodies are shown as their base64 length;
-API keys and proxy credentials are redacted.
+Task examples log the ID returned by the SDK when the task is created, followed by the solver
+result. Browser examples then separately verify page acceptance. Receiving a solution from the SDK
+proves only that the service completed the task; it does not prove that the target page accepted
+the result. When a page exposes only a callback-delivery signal, the example states that narrower
+boundary instead of claiming server-side acceptance. Image and balance examples print their
+applicable SDK result without inventing a browser acceptance step. The balance example does not
+create a task and therefore has no task ID. Image bodies are never printed, and API keys must
+remain in `.env`.
 
-Every example is intentionally self-contained and written as a linear tutorial:
-SDK and browser setup, page navigation, parameter collection, task creation,
-`solver.solve()`, solution application, form submission, and acceptance check
-are all visible in the same file. Some code is repeated so that an example can
-be copied without also copying hidden project helpers.
+Token injection and submission are site-specific. The included browser code demonstrates one
+target's flow; for another target, you must inspect the page and determine the correct response
+field, callback, submission action, and acceptance signal yourself.
+
+Tencent confirms that the intercepted page callback received the same ticket and random string.
+This proves callback delivery, not server-side acceptance; add a target-specific acceptance check
+when the page exposes one.
+
+Every example is intentionally self-contained and written as a linear tutorial. Browser examples
+show SDK and browser setup, page navigation, parameter collection, task creation, `solver.solve()`,
+solution application, site-specific submission or callback delivery, and the applicable acceptance
+check in one file. Image-only, coordinate, and balance examples show their complete SDK flow
+without inventing browser steps. Some code is repeated so that an example can be copied without
+also copying hidden project helpers.
 
 ## Examples
 
-| Captcha | File | Command |
-|---|---|---|
-| reCAPTCHA v2 | [`recaptcha_v2.js`](examples/reCAPTCHA/recaptcha_v2.js) | `npm run example:recaptcha-v2` |
-| reCAPTCHA v2 + proxy | [`recaptcha_v2_proxy.js`](examples/reCAPTCHA/recaptcha_v2_proxy.js) | `npm run example:recaptcha-v2-proxy` |
-| reCAPTCHA v2 callback | [`recaptcha_v2_callback_variant1.js`](examples/reCAPTCHA/recaptcha_v2_callback_variant1.js) | `npm run example:callback` |
-| reCAPTCHA v2 callback, automatic discovery | [`recaptcha_v2_callback_variant2.js`](examples/reCAPTCHA/recaptcha_v2_callback_variant2.js) | `npm run example:callback-auto` |
-| reCAPTCHA v2 callback + proxy | [`recaptcha_v2_callback_proxy.js`](examples/reCAPTCHA/recaptcha_v2_callback_proxy.js) | `npm run example:callback-proxy` |
-| reCAPTCHA v3 | [`recaptcha_v3.js`](examples/reCAPTCHA/recaptcha_v3.js) | `npm run example:recaptcha-v3` |
-| reCAPTCHA v3 interception | [`recaptcha_v3_extended_js_script.js`](examples/reCAPTCHA/recaptcha_v3_extended_js_script.js) | `npm run example:recaptcha-v3-extended` |
-| Cloudflare Turnstile | [`cloudflare_turnstile.js`](examples/cloudflare/cloudflare_turnstile.js) | `npm run example:turnstile` |
-| Cloudflare Challenge | [`cloudflare_challenge_page.js`](examples/cloudflare/cloudflare_challenge_page.js) | `npm run example:challenge` |
-| Tencent CAPTCHA | [`tencent.js`](examples/tencent/tencent.js) | `npm run example:tencent` |
-| Yandex SmartCaptcha | [`yandex_smartcaptcha.js`](examples/yandex/yandex_smartcaptcha.js) | `npm run example:yandex-smartcaptcha` |
-| Image captcha, screenshot | [`normal_captcha_screenshot.js`](examples/normal_captcha/normal_captcha_screenshot.js) | `npm run example:image` |
-| Image captcha, original pixels through canvas | [`normal_captcha_canvas.js`](examples/normal_captcha/normal_captcha_canvas.js) | `npm run example:image-canvas` |
-| Image captcha with parameters | [`normal_captcha_screenshot_params.js`](examples/normal_captcha/normal_captcha_screenshot_params.js) | `npm run example:image-params` |
-| Coordinates | [`coordinates.js`](examples/coordinates/coordinates.js) | `npm run example:coordinates` |
+| Captcha                          | File                                                                                  | Command                               |
+| -------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |
+| reCAPTCHA v2 form                | [`recaptcha_v2.js`](examples/reCAPTCHA/recaptcha_v2.js)                               | `npm run recaptcha-v2`                |
+| reCAPTCHA v2 named callback      | [`recaptcha_v2_callback.js`](examples/reCAPTCHA/recaptcha_v2_callback.js)             | `npm run recaptcha-v2-callback`       |
+| reCAPTCHA v2 discovered callback | [`recaptcha_v2_callback_auto.js`](examples/reCAPTCHA/recaptcha_v2_callback_auto.js)   | `npm run recaptcha-v2-callback-auto`  |
+| reCAPTCHA v2 with proxy          | [`recaptcha_v2_proxy.js`](examples/reCAPTCHA/recaptcha_v2_proxy.js)                   | `npm run recaptcha-v2-proxy`          |
+| reCAPTCHA v2 callback + proxy    | [`recaptcha_v2_callback_proxy.js`](examples/reCAPTCHA/recaptcha_v2_callback_proxy.js) | `npm run recaptcha-v2-callback-proxy` |
+| reCAPTCHA v2 Enterprise          | [`recaptcha_v2_enterprise.js`](examples/reCAPTCHA/recaptcha_v2_enterprise.js)         | `npm run recaptcha-v2-enterprise`     |
+| reCAPTCHA v3                     | [`recaptcha_v3.js`](examples/reCAPTCHA/recaptcha_v3.js)                               | `npm run recaptcha-v3`                |
+| Cloudflare Turnstile             | [`turnstile.js`](examples/cloudflare/turnstile.js)                                    | `npm run turnstile`                   |
+| Cloudflare Challenge             | [`turnstile_challenge.js`](examples/cloudflare/turnstile_challenge.js)                | `npm run turnstile-challenge`         |
+| Tencent CAPTCHA                  | [`tencent.js`](examples/tencent/tencent.js)                                           | `npm run tencent`                     |
+| Yandex SmartCaptcha              | [`yandex_smartcaptcha.js`](examples/yandex/yandex_smartcaptcha.js)                    | `npm run yandex`                      |
+| Yandex image challenge           | [`yandex_smartcaptcha_image.js`](examples/yandex/yandex_smartcaptcha_image.js)        | `npm run yandex-image`                |
+| GeeTest v3                       | [`geetest_v3.js`](examples/geetest/geetest_v3.js)                                     | `npm run geetest-v3`                  |
+| GeeTest v4                       | [`geetest_v4.js`](examples/geetest/geetest_v4.js)                                     | `npm run geetest-v4`                  |
+| Image-to-text                    | [`image_to_text.js`](examples/normal_captcha/image_to_text.js)                        | `npm run image-to-text`               |
+| Coordinates                      | [`coordinates.js`](examples/coordinates/coordinates.js)                               | `npm run coordinates`                 |
+| Balance                          | [`balance.js`](examples/balance.js)                                                   | `npm run balance`                     |
 
-The reCAPTCHA v2 and Yandex SmartCaptcha examples use the official provider
-demos by default. Every other browser example requires `TARGET_URL` in `.env`
-for a page you are authorized to test.
+The folders group examples by CAPTCHA family. Each file remains standalone and includes its own
+SDK setup, task creation, solution handling, and applicable result check. Browser examples also
+include browser setup, solution delivery, and an acceptance or callback-delivery check. SDK-only
+image, coordinate, and balance examples print the result relevant to their task.
 
-## Proxy
+### Target configuration
+
+The standard reCAPTCHA v2 form example and Yandex SmartCaptcha example use official provider demos
+by default. The named-callback and discovered-callback reCAPTCHA examples require a page that
+actually exposes the corresponding callback flow. Set `RECAPTCHA_V2_TARGET_URL` to a compatible
+page you own or are authorized to test; for the named-callback variants, also set
+`RECAPTCHA_V2_CALLBACK` to the page's callback name.
+
+Other browser targets can be configured with `RECAPTCHA_ENTERPRISE_TARGET_URL`,
+`RECAPTCHA_V3_TARGET_URL`, `TURNSTILE_TARGET_URL`, `TURNSTILE_CHALLENGE_TARGET_URL`,
+`TENCENT_TARGET_URL`, `YANDEX_TARGET_URL`, `GEETEST_V3_TARGET_URL`, and
+`GEETEST_V4_TARGET_URL`. The `example.com/page_with_...` values in `.env.example` are placeholders,
+not working CAPTCHA demos. Replace them before running those examples. Changing a URL does not
+automatically adapt selectors, callbacks, submission, or acceptance checks to a different page.
+
+For Tencent, set `TENCENT_SCRIPT_URL` only when the example cannot capture the script URL from the
+page.
+
+### Proxy configuration
+
+The two proxy examples require `PROXY_ADDRESS` and `PROXY_PORT`. `PROXY_TYPE` defaults to `http`;
+set `PROXY_LOGIN` and `PROXY_PASSWORD` when the proxy requires authentication:
 
 ```dotenv
 PROXY_TYPE=http
-PROXY_ADDRESS=proxy.example.com
+PROXY_ADDRESS=127.0.0.1
 PROXY_PORT=8080
 PROXY_LOGIN=
 PROXY_PASSWORD=
 ```
 
-The browser and API task use the same proxy.
+Both proxy examples send the same proxy settings to Chromium and `Tasks.RecaptchaV2` so the
+browser and solver present the same network identity.
+
+> [!IMPORTANT]
+> CAPTCHA-solving tasks are paid API operations. Local checks use fixtures and
+> do not call the paid service. Run live tests only with explicit authorization.
 
 ## Checks
 
 ```bash
 npm run lint
+npm run format:check
 npm run check
 npm test
 ```
 
-`normal_captcha_screenshot.js` sends the pixels as rendered by Chrome.
-`normal_captcha_canvas.js` draws the loaded image into a canvas and sends its
-original pixel data, avoiding viewport scaling and screenshot effects. Canvas
-capture only works when the page permits reading the image without a CORS-tainted
-canvas.
+`npm run check` runs linting, formatting, syntax and workflow-guide validation, and the complete
+local regression suite. These checks use local fixtures and do not create paid tasks.
+
+`npm start` runs the Turnstile Challenge example. To run one explicitly authorized live attempt,
+pass an example name to the live runner:
+
+```bash
+npm run test:live -- recaptcha-v2
+```
+
+Running `npm run test:live` without an example name attempts every example command except Tencent
+and can create multiple paid tasks. Some examples also require target, callback, or proxy settings
+described above. Prefer selecting one example explicitly. Tencent is never included in the default
+set and must be selected with `npm run test:live -- tencent`.
+
+`examples/normal_captcha/image_to_text.js` reads a local sample image and sends its base64
+contents through the SDK.
 
 ## Useful links
 
@@ -129,4 +209,4 @@ canvas.
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/captcha-solver-api/tencent-captcha-puppeteer-demo/blob/main/LICENSE).
+This project is licensed under the [MIT License](LICENSE.md).

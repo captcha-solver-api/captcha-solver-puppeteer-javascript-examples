@@ -5,24 +5,16 @@ on:
 permissions:
   contents: read
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '22.12'
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['22.12', '24']
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
         with:
-          node-version: '22.12'
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
-      - run: node scripts/check.js
-      - run: npm test
+      - run: npm run check

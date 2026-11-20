@@ -1,0 +1,60 @@
+import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+
+import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
+
+/**
+ * This example shows how to solve an image-to-text CAPTCHA. It reads a local CAPTCHA image,
+ * describes the expected answer format, sends the task to the service, and prints the recognized
+ * text. It uses Tasks.ImageToText and CaptchaClient.solve().
+ *
+ * How it works:
+ * STEP-01 - Create the SDK client.
+ * STEP-02 - Read the image and create the task.
+ * STEP-03 - Send the task and wait for the solver result.
+ * STEP-04 - Print the recognized text or report an error.
+ */
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
+
+// STEP-01: Create the SDK client with the API key from CAPTCHA_API_KEY.
+const client = new CaptchaClient({
+  clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY',
+});
+const lettersOnly = 2;
+
+// STEP-02: Load the sample image and describe the expected answer format.
+const task = new Tasks.ImageToText({
+  body: readFileSync(new URL('../../assets/text-captcha.png', import.meta.url)).toString('base64'),
+  numeric: lettersOnly,
+  minLength: 4,
+  maxLength: 6,
+});
+
+/** Solve the image task and print its recognized text. */
+export function main() {
+  return (
+    // STEP-03: Send the image-to-text task and wait for the solver result.
+    solveAndLogTaskId(client, task).then((solution) => {
+      // STEP-04: Print the recognized text returned in solution.text.
+      console.log(solution.text);
+      return solution;
+    })
+  );
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

@@ -1,97 +1,143 @@
-/**
- * Solve reCAPTCHA v2 through the same HTTP proxy in Chrome and Captcha Solver.
- * Every important step is kept in this file so it can be copied and adapted.
- */
 import { pathToFileURL } from 'node:url';
 import { CaptchaClient, Tasks } from '@captcha-solver-api/javascript-sdk';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-puppeteer.use(StealthPlugin());
-const DEFAULT_URL = 'https://www.google.com/recaptcha/api2/demo';
+/**
+ * Solve Google reCAPTCHA v2 through the same proxy in Chromium and Captcha Solver. It uses
+ * Tasks.RecaptchaV2 and CaptchaClient.solve(), injects the token, submits the form, and checks
+ * page acceptance.
+ * Token injection and submission are site-specific. You must inspect the target page and
+ * determine the correct way to pass the token yourself.
+ *
+ * How it works:
+ * STEP-01 - Read proxy settings and configure the SDK client.
+ * STEP-02 - Launch Chromium through the proxy and open the target.
+ * STEP-03 - Extract the widget parameters.
+ * STEP-04 - Create and solve a proxy-based task.
+ * STEP-05 - Log and inject the solution.
+ * STEP-06 - Submit the form and verify acceptance.
+ * STEP-07 - Handle errors and close Chromium.
+ */
 
-/** Read proxy settings from environment variables. */
+puppeteer.use(StealthPlugin());
+
+/** Solve a task with the SDK and log the task ID returned by createTask(). */
+function solveAndLogTaskId(solver, task) {
+  const loggingSolver = Object.create(solver);
+  loggingSolver.createTask = (...args) =>
+    solver.createTask(...args).then((taskId) => {
+      console.log('Task ID:', taskId);
+      return taskId;
+    });
+  return loggingSolver.solve(task);
+}
+const websiteURL =
+  process.env.RECAPTCHA_V2_TARGET_URL || 'https://www.google.com/recaptcha/api2/demo';
+const client = new CaptchaClient({ clientKey: process.env.CAPTCHA_API_KEY || 'YOUR_API_KEY' });
+let browser;
+
+/** Read and validate proxy settings from the environment. */
 function getProxy() {
-  const proxyAddress = process.env.PROXY_ADDRESS;
   const proxyPort = Number(process.env.PROXY_PORT);
-  if (!proxyAddress || !Number.isInteger(proxyPort)) {
-    throw new Error('Set PROXY_ADDRESS and PROXY_PORT.');
+  if (!process.env.PROXY_ADDRESS || !Number.isInteger(proxyPort)) {
+    throw new Error('Set PROXY_ADDRESS and PROXY_PORT for the proxy example.');
   }
   return {
     proxyType: process.env.PROXY_TYPE || 'http',
-    proxyAddress,
+    proxyAddress: process.env.PROXY_ADDRESS,
     proxyPort,
     proxyLogin: process.env.PROXY_LOGIN || undefined,
     proxyPassword: process.env.PROXY_PASSWORD || undefined,
   };
 }
 
-/** Solve and submit proxy-based reCAPTCHA v2 on an opened page. */
-export async function solveCaptcha(page, solver, proxy) {
-  console.log('1. Opening the page through the configured proxy');
-  await page.goto(process.env.TARGET_URL || DEFAULT_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('[data-sitekey]');
-
-  console.log('2. Reading reCAPTCHA parameters');
-  const captcha = await page.$eval('[data-sitekey]', (element) => ({
-    websiteKey: element.getAttribute('data-sitekey'),
-    isInvisible: element.getAttribute('data-size') === 'invisible',
-    recaptchaDataSValue: element.getAttribute('data-s') || undefined,
-  }));
-  const task = new Tasks.RecaptchaV2({
-    websiteURL: page.url(),
-    ...captcha,
-    ...proxy,
-    userAgent: await page.evaluate(() => navigator.userAgent),
-  });
-
-  console.log('3. Sending RecaptchaV2 task');
-  const solution = await solver.solve(task);
-  console.log('4. Solution received', solution);
-  if (!solution.gRecaptchaResponse) throw new Error('Captcha Solver returned an empty token.');
-
-  // Token injection and submission are site-specific; adapt this step to the target page.
-  console.log('5. Writing the token and submitting the form');
-  await page.evaluate((token) => {
-    let response = document.querySelector('[name="g-recaptcha-response"]');
-    if (!response) {
-      response = document.createElement('textarea');
-      response.name = 'g-recaptcha-response';
-      document.querySelector('form')?.append(response);
-    }
-    response.value = token;
-    response.dispatchEvent(new Event('change', { bubbles: true }));
-  }, solution.gRecaptchaResponse);
-  await page.click(process.env.SUBMIT_SELECTOR || 'button[type="submit"], input[type="submit"]');
-
-  console.log('6. Waiting for page acceptance');
-  const selector = process.env.SUCCESS_SELECTOR || '.recaptcha-success, p[class*="successMessage"]';
-  await page.waitForSelector(selector, { visible: true });
-  return page.$eval(selector, (element) => element.textContent.trim());
+/** Solve and submit reCAPTCHA v2 through the configured proxy. */
+export function solveCaptcha(page, solver = client, proxy = getProxy()) {
+  // STEP-02: Open the target through Chromium's configured proxy.
+  return (
+    page
+      .goto(process.env.RECAPTCHA_V2_TARGET_URL || websiteURL, { waitUntil: 'domcontentloaded' })
+      .then(() => page.waitForSelector('[data-sitekey]'))
+      // STEP-03: Read widget parameters and the browser User-Agent.
+      .then(() =>
+        Promise.all([
+          page.$eval('[data-sitekey]', (element) => ({
+            websiteKey: element.getAttribute('data-sitekey'),
+            isInvisible: element.getAttribute('data-size') === 'invisible',
+            recaptchaDataSValue: element.getAttribute('data-s') || undefined,
+          })),
+          page.evaluate(() => navigator.userAgent),
+        ]),
+      )
+      // STEP-04: Send the same proxy identity with the SDK task.
+      .then(([captcha, userAgent]) =>
+        solveAndLogTaskId(
+          solver,
+          new Tasks.RecaptchaV2({
+            websiteURL: page.url(),
+            ...captcha,
+            ...proxy,
+            userAgent,
+          }),
+        ),
+      )
+      .then((solution) => {
+        // STEP-05: Token injection and submission are site-specific.
+        console.log('Solution:', solution);
+        if (!solution.gRecaptchaResponse)
+          throw new Error('Captcha Solver returned an empty token.');
+        return page.evaluate((token) => {
+          let response = document.querySelector('[name="g-recaptcha-response"]');
+          if (!response) {
+            response = document.createElement('textarea');
+            response.name = 'g-recaptcha-response';
+            document.querySelector('form')?.append(response);
+          }
+          response.value = token;
+          response.dispatchEvent(new Event('change', { bubbles: true }));
+        }, solution.gRecaptchaResponse);
+      })
+      // STEP-06: Submit and require a visible acceptance signal.
+      .then(() => page.click('button[type="submit"], input[type="submit"]'))
+      .then(() =>
+        page.waitForSelector('.recaptcha-success, p[class*="successMessage"]', { visible: true }),
+      )
+      .then(() =>
+        page.$eval('.recaptcha-success, p[class*="successMessage"]', (element) =>
+          element.textContent.trim(),
+        ),
+      )
+  );
 }
 
 /** Run the complete standalone proxy example. */
-export async function main() {
-  const apiKey = process.env.CAPTCHA_API_KEY;
-  if (!apiKey || apiKey === 'your_api_key') throw new Error('Set CAPTCHA_API_KEY.');
+export function main() {
+  // STEP-01: Validate proxy configuration before launching the browser.
   const proxy = getProxy();
-  const solver = new CaptchaClient({ clientKey: apiKey });
-  const browser = await puppeteer.launch({
-    headless: process.env.HEADLESS === 'true',
-    executablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
-    args: [`--proxy-server=${proxy.proxyType}://${proxy.proxyAddress}:${proxy.proxyPort}`],
-  });
-  try {
-    const page = await browser.newPage();
-    if (proxy.proxyLogin) {
-      await page.authenticate({ username: proxy.proxyLogin, password: proxy.proxyPassword });
-    }
-    console.log('Captcha solved successfully:', await solveCaptcha(page, solver, proxy));
-  } finally {
-    await browser.close();
-  }
+  const endpoint = `${proxy.proxyType}://${proxy.proxyAddress}:${proxy.proxyPort}`;
+  return (
+    puppeteer
+      .launch({ headless: process.env.HEADLESS === 'true', args: [`--proxy-server=${endpoint}`] })
+      .then((instance) => {
+        browser = instance;
+        return browser.newPage();
+      })
+      .then((page) => {
+        const authentication = proxy.proxyLogin
+          ? page.authenticate({ username: proxy.proxyLogin, password: proxy.proxyPassword })
+          : page.evaluate(() => true);
+        return authentication.then(() => solveCaptcha(page, client, proxy));
+      })
+      .then((message) => console.log(`Page confirmation: ${message}`))
+      // STEP-07: Always close Chromium.
+      .finally(() => browser?.close())
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((error) => { console.error('Example failed:', error.message); process.exitCode = 1; });
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
